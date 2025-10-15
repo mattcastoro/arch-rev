@@ -28,24 +28,24 @@ The goal of this proof of concept is to explore and validate architectural decis
 ## Design Approach (potential)
 
 App
- ├─ Header
- ├─ Main
- │   ├─ HomeownerForm
- │   │   ├─ InputFields (Name, Address, Submission Details, etc.)
- │   │   ├─ SubmitButton
- │   │   └─ ConfirmationMessage
- │   ├─ NeighborAcknowledgment
- │   │   ├─ EmailLinkHandler
- │   │   ├─ AcknowledgeButton
- │   │   └─ StatusMessage
- │   └─ CommitteeReview
- │       ├─ SubmissionList
- │       │   └─ SubmissionItem
- │       │       ├─ DetailsView
- │       │       ├─ CommentSection
- │       │       └─ DecisionControls (Approve / Reject / Request Changes)
- │       └─ Notifications
- └─ Footer
+  Header
+  Main
+    HomeownerForm
+      InputFields (Name, Address, Submission Details, etc.)
+      SubmitButton
+      ConfirmationMessage
+    NeighborAcknowledgement
+      EmailLinkHandler
+      AcknowledgementButton
+      StatusMessage
+    CommitteeReview
+      SubmissionList
+        SubmissionItem
+          DetailsView
+          CommentSection
+          DecisionControls (Approve / Reject / Request Changes / tbd.)
+      Notifications
+    Footer
 
  ---
 
