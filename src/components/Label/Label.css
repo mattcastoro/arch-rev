@@ -1,0 +1,9 @@
+.form-label {
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+  display: block;
+}
+
+.required {
+  color: red;
+}

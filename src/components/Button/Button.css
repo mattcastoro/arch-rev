@@ -1,0 +1,39 @@
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.primary {
+  background-color: #2563eb;
+  color: white;
+}
+
+.primary:hover {
+  background-color: #1d4ed8;
+}
+
+.secondary {
+  background-color: #e5e7eb;
+  color: #1f2937;
+}
+
+.secondary:hover {
+  background-color: #d1d5db;
+}
+
+.text {
+  background-color: transparent;
+  color: #2563eb;
+  padding: 0.5rem 1rem;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.text:hover {
+  color: #1d4ed8;
+  background-color: transparent;
+}
