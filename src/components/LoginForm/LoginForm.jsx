@@ -1,28 +1,33 @@
 import { useState } from "react"
 import Button from "../Button/Button"
+import FormField from "../FormField/FormField";
 
 function LoginForm() {
   return (
     <>
       <form>
-        <label>
-          Email
-          <input
-            type="email"
-            // value={email}
-            placeholder="tonystark@marvel.com" />
-        </label>
 
-        <label>
-            Password
-            <input
-              type="password"
-              // value={password}
-              placeholder="***" />
-          </label>
-          <Button type="submit" className="primary">Log In</Button>
-          <Button type="submit" className="text">Forgot your password?</Button>
-          <Button type="submit" className="secondary">Sign Up</Button>
+        <FormField
+          label="Email"
+          id="email"
+          type="email"
+          placeholder="tonystark@marvel.com"
+          required
+        />
+        <FormField
+          label="Password"
+          id="password"
+          type="password"
+          placeholder="***"
+          required
+        />
+        <div>
+          <Button type="submit" variant="primary" size="btn-md">Log In</Button>
+          <Button type="button" variant="text"size="btn-sm">Forgot your password?</Button>
+        </div>
+        
+        <Button type="button" variant="secondary" size="btn-md">Sign Up</Button>
+
       </form>
       </>
   );

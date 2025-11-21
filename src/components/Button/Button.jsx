@@ -1,10 +1,11 @@
 import './Button.css'
 
 function Button({ 
-  children, 
-  onClick, 
-  type="button",
-  variant = "primary", 
+  children,
+  onClick,
+  type = "button",
+  variant = "primary",
+  size = "btn-md",
   className="",
 }) {
 
@@ -12,7 +13,7 @@ function Button({
     <button
       type={type}
       onClick={onClick}
-      className={`btn ${variant} ${className}`}>
+      className={`btn ${variant} ${size} ${className}`}>
       {children}
     </button>
   );
