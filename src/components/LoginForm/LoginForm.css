@@ -1,0 +1,70 @@
+/* NO min-height here */
+.login-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Center form on mobile */
+.login-form {
+  width: 100%;
+  max-width: 26rem;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  text-align: center;
+
+  flex: 1; /* allow form to stretch so signup can go bottom */
+}
+
+/* Default: fields stacked */
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Login + Forgot buttons stacked */
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Signup stays at bottom properly now */
+.signup-section {
+  margin-top: auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .login-form {
+    text-align: left;
+    padding-left: 4rem;
+    align-items: flex-start;
+  }
+
+  .form-fields {
+    flex-direction: row;
+    gap: 2rem;
+    width: 100%;
+  }
+
+  .form-fields > * {
+    flex: 1;
+  }
+
+  .form-actions {
+    align-items: flex-start;
+  }
+
+  .signup-section {
+    text-align: left;
+    align-items: flex-start;
+    margin-top: auto; /* still works */
+  }
+}

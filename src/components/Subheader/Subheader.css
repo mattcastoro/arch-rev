@@ -1,6 +1,5 @@
 .subheader {
-  font-size: 1.5rem;
-  color: #293649de; /* dark gray */
+  color: var(--gray-600);
   margin-top: 1rem;
   margin-bottom: 1rem;
   text-align: center;

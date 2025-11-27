@@ -6,6 +6,7 @@ function Button({
   type = "button",
   variant = "primary",
   size = "btn-md",
+  fullWidth = false,
   className="",
 }) {
 
@@ -13,7 +14,14 @@ function Button({
     <button
       type={type}
       onClick={onClick}
-      className={`btn ${variant} ${size} ${className}`}>
+      className={`
+        btn
+        ${variant}
+        ${size}
+        ${fullWidth ? "fullWidth" : ""}
+        ${className}
+      `}
+    >
       {children}
     </button>
   );
