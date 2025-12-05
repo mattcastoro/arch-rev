@@ -1,15 +1,15 @@
-import './Login.css'
-import LoginForm from "../../components/LoginForm/LoginForm";
+import '../../App.css'
 import Header from "../../components/Header/Header"
 import Subheader from "../../components/Subheader/Subheader";
+import LoginForm from "../../components/LoginForm/LoginForm";
 
 function Login() {
   return (
-    <div className="login-page-container">
-      <Header text="Architectural Review for Marvel Associates"/>
+    <>
+      <Header text="Architectural Review for Marvel Associates" />
       <Subheader text="For submitting, notifying, reviewing, and seeking approval on exterior home improvements." />
-      <LoginForm/>
-    </div>
+      <LoginForm />
+    </>
   );
 }
 
