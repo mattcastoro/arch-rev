@@ -1,14 +1,6 @@
 .login-page-container {
-  box-sizing: border-box;
-  min-height: 100vh;      /* The entire page height */
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   padding: 2rem;
-}
-
-/* Make the form take space but allow signup to push down */
-.login-form {
-  display: flex;
-  flex-direction: column;
-  flex: 1;                /* This makes the form stretch */
 }

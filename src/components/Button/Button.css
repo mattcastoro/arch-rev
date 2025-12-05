@@ -30,6 +30,7 @@
 }
 
 .btn.text {
+  padding: 0.5rem 0;
   background-color: transparent;
   color: var(--primary-500);
 }
