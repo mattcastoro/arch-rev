@@ -7,7 +7,7 @@ function SignUp() {
   return (
     <>
       <Header text="Architectural Review for Marvel Associates"/>
-      <Subheader text="For submitting, notifying, reviewing, and seeking approval on exterior home improvements." />
+      <Subheader text="Please complete the following fields to create your profile." />
       <SignUpForm />
     </>
   )

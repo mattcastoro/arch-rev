@@ -5,10 +5,11 @@ function FormField({
   id,
   type = "text",
   placeholder = "",
+  labelPosition = "left" /* 'top' | 'left' */,
   required = false
  }) {
   return (
-    <div className='field'>
+    <div className={`field field--${labelPosition}`}>
       <label htmlFor={id} className='label'>
         {label}
         {required && <span className='required'>*</span>}
