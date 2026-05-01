@@ -1,10 +1,12 @@
 import './SignUpForm.css'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Alert from "../Alert/Alert"
 import Button from "../Button/Button"
 import FormField from "../FormField/FormField"
 
 function SignUpForm() {
+  const navigate = useNavigate()
   const [alertMessage, setAlertMessage] = useState('')
 
   function handleSubmit(event) {
@@ -87,7 +89,14 @@ function SignUpForm() {
         </div>
         <Button type="button" variant="primary" size="btn-md">Add Person</Button>
         <Button type="submit" variant="primary" size="btn-md">Create</Button>
-        <Button type="button" variant="secondary" size="btn-md">Cancel</Button>
+        <Button
+          type="button"
+          variant="secondary"
+          size="btn-md"
+          onClick={() => navigate('/login')}
+        >
+          Cancel
+        </Button>
       </form>
     </div>
   );
