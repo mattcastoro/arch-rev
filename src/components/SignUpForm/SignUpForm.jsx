@@ -1,12 +1,50 @@
 import './SignUpForm.css'
+import { useState } from 'react'
+import Alert from "../Alert/Alert"
 import Button from "../Button/Button"
 import FormField from "../FormField/FormField"
-import Paragraph from "../Paragraph/Paragraph"
 
 function SignUpForm() {
+  const [alertMessage, setAlertMessage] = useState('')
+
+  function handleSubmit(event) {
+    event.preventDefault()
+
+    const formData = new FormData(event.currentTarget)
+    const emailInput = event.currentTarget.elements.email
+    const requiredFields = [
+      ['streetAddress', 'Street address'],
+      ['firstName', 'First name'],
+      ['lastName', 'Last name'],
+      ['email', 'Email'],
+      ['phone', 'Phone'],
+    ]
+
+    const missingFields = requiredFields
+      .filter(([name]) => !formData.get(name)?.trim())
+      .map(([, label]) => label)
+
+    if (missingFields.length > 0) {
+      setAlertMessage(`Please complete: ${missingFields.join(', ')}.`)
+      return
+    }
+
+    if (!emailInput.validity.valid) {
+      setAlertMessage('Please enter a valid email address.')
+      return
+    }
+
+    setAlertMessage('')
+  }
+
   return (
     <div className='signUp-container'>
-      <form className="signUp-form">
+      <form className="signUp-form" noValidate onSubmit={handleSubmit}>
+        {alertMessage && (
+          <Alert onDismiss={() => setAlertMessage('')}>
+            {alertMessage}
+          </Alert>
+        )}
         <FormField
           label="Street Address"
           id="streetAddress"

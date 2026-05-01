@@ -3,6 +3,7 @@ import './FormField.css'
 function FormField({ 
   label,
   id,
+  name = id,
   type = "text",
   placeholder = "",
   labelPosition = "left" /* 'top' | 'left' */,
@@ -16,6 +17,7 @@ function FormField({
       </label>
       <input
         id={id}
+        name={name}
         type={type}
         placeholder={placeholder}
         required={required}

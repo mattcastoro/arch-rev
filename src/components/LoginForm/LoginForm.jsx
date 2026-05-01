@@ -1,12 +1,42 @@
 import './LoginForm.css'
+import { useState } from 'react'
+import Alert from "../Alert/Alert"
 import Button from "../Button/Button"
 import FormField from "../FormField/FormField"
 import Paragraph from "../Paragraph/Paragraph"
 
 function LoginForm() {
+  const [alertMessage, setAlertMessage] = useState('')
+
+  function handleSubmit(event) {
+    event.preventDefault()
+
+    const formData = new FormData(event.currentTarget)
+    const email = formData.get('email')?.trim()
+    const password = formData.get('password')?.trim()
+    const emailInput = event.currentTarget.elements.email
+
+    if (!email || !password) {
+      setAlertMessage('Email and password are required before logging in.')
+      return
+    }
+
+    if (!emailInput.validity.valid) {
+      setAlertMessage('Please enter a valid email address.')
+      return
+    }
+
+    setAlertMessage('')
+  }
+
   return (
     <div className="login-container">
-      <form className="login-form">
+      <form className="login-form" noValidate onSubmit={handleSubmit}>
+        {alertMessage && (
+          <Alert onDismiss={() => setAlertMessage('')}>
+            {alertMessage}
+          </Alert>
+        )}
         <div className="form-fields">
           <FormField
             label="Email"
