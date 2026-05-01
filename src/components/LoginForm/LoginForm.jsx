@@ -57,7 +57,14 @@ function LoginForm() {
         </div>
         <div className="form-actions">
           <Button type="submit" variant="primary" size="btn-md">Log In</Button>
-          <Button type="button" variant="text" size="btn-sm">Forgot your password?</Button>
+          <Button
+            type="button"
+            variant="text"
+            size="btn-sm"
+            onClick={() => navigate('/forgot-password')}
+          >
+            Forgot your password?
+          </Button>
         </div>
         <div className="signup-section">
           <Paragraph text="Don't have an account?"></Paragraph>
