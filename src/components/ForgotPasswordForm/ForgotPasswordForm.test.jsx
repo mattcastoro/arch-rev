@@ -46,4 +46,49 @@ describe('ForgotPasswordForm', () => {
 
     expect(mockNavigate).toHaveBeenCalledWith('/reset-password')
   })
+
+  test('shows validation for invalid email format', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter>
+        <ForgotPasswordForm />
+      </MemoryRouter>,
+    )
+
+    await user.type(screen.getByLabelText('Email*'), 'bad-email')
+    await user.click(screen.getByRole('button', { name: /send temporary code/i }))
+
+    expect(screen.getByText('Please enter a valid email address.')).toBeInTheDocument()
+    expect(mockNavigate).not.toHaveBeenCalled()
+  })
+
+  test('cancel navigates to login', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter>
+        <ForgotPasswordForm />
+      </MemoryRouter>,
+    )
+
+    await user.click(screen.getByRole('button', { name: /cancel/i }))
+
+    expect(mockNavigate).toHaveBeenCalledWith('/login')
+  })
+
+  test('dismisses an alert and clears message', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter>
+        <ForgotPasswordForm />
+      </MemoryRouter>,
+    )
+
+    await user.click(screen.getByRole('button', { name: /send temporary code/i }))
+    await user.click(screen.getByRole('button', { name: /dismiss alert/i }))
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
 })

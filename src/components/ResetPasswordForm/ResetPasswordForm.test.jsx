@@ -63,4 +63,36 @@ describe('ResetPasswordForm', () => {
 
     expect(mockNavigate).toHaveBeenCalledWith('/login')
   })
+
+  test('does not show an alert on valid submission', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter>
+        <ResetPasswordForm />
+      </MemoryRouter>,
+    )
+
+    await user.type(screen.getByLabelText(/temporary code/i), 'ABC123')
+    await user.type(screen.getByLabelText(/new password/i, { selector: '#newPassword' }), 'Password1!')
+    await user.type(screen.getByLabelText(/confirm new password/i, { selector: '#confirmNewPassword' }), 'Password1!')
+    await user.click(screen.getByRole('button', { name: /reset password/i }))
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  test('dismisses alert after validation error', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter>
+        <ResetPasswordForm />
+      </MemoryRouter>,
+    )
+
+    await user.click(screen.getByRole('button', { name: /reset password/i }))
+    await user.click(screen.getByRole('button', { name: /dismiss alert/i }))
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
 })
