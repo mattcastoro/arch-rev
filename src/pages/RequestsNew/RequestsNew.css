@@ -1,0 +1,38 @@
+.requests-new-page {
+  width: 100%;
+  max-width: 60rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.requests-new-header h1 {
+  margin: 0;
+}
+
+.requests-new-header p {
+  margin: 0.5rem 0 0;
+  color: var(--gray-600);
+}
+
+.requests-new-section {
+  border: 1px solid var(--gray-200);
+  border-radius: 0.375rem;
+  background: white;
+  padding: 1rem;
+}
+
+.requests-new-section h2 {
+  margin: 0 0 0.375rem;
+}
+
+.requests-new-section p {
+  margin: 0;
+  color: var(--gray-700);
+}
+
+.requests-new-actions {
+  display: flex;
+  justify-content: flex-end;
+}

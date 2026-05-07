@@ -33,6 +33,11 @@ describe('App routes', () => {
 
   test('renders home page', () => {
     renderAt('/home')
-    expect(screen.getByRole('heading', { name: /welcome to the home page/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /architectural review dashboard/i })).toBeInTheDocument()
+  })
+
+  test('renders new request page', () => {
+    renderAt('/requests/new')
+    expect(screen.getByRole('heading', { name: /create new request/i })).toBeInTheDocument()
   })
 })
