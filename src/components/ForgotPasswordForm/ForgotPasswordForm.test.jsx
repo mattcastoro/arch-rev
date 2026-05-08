@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import ForgotPasswordForm from './ForgotPasswordForm'
+import { storageKeys } from '../../lib/localData'
 
 const mockNavigate = jest.fn()
 
@@ -13,6 +14,7 @@ jest.mock('react-router-dom', () => ({
 describe('ForgotPasswordForm', () => {
   beforeEach(() => {
     mockNavigate.mockReset()
+    localStorage.clear()
   })
 
   test('shows validation message when email is empty', async () => {
@@ -32,8 +34,11 @@ describe('ForgotPasswordForm', () => {
     expect(mockNavigate).not.toHaveBeenCalled()
   })
 
-  test('navigates to reset password when email is valid', async () => {
+  test('shows code message when email is valid and account exists', async () => {
     const user = userEvent.setup()
+    localStorage.setItem(storageKeys.USERS_KEY, JSON.stringify([
+      { email: 'person@example.com', password: 'abc123', streetAddress: '1 test', residents: [], createdAt: 'now' },
+    ]))
 
     render(
       <MemoryRouter>
@@ -44,7 +49,8 @@ describe('ForgotPasswordForm', () => {
     await user.type(screen.getByLabelText('Email*'), 'person@example.com')
     await user.click(screen.getByRole('button', { name: /send temporary code/i }))
 
-    expect(mockNavigate).toHaveBeenCalledWith('/reset-password')
+    expect(screen.getByText(/temporary code:/i)).toBeInTheDocument()
+    expect(mockNavigate).not.toHaveBeenCalled()
   })
 
   test('shows validation for invalid email format', async () => {
@@ -90,5 +96,52 @@ describe('ForgotPasswordForm', () => {
     await user.click(screen.getByRole('button', { name: /dismiss alert/i }))
 
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  test('shows error when email is not found', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter>
+        <ForgotPasswordForm />
+      </MemoryRouter>,
+    )
+
+    await user.type(screen.getByLabelText('Email*'), 'missing@example.com')
+    await user.click(screen.getByRole('button', { name: /send temporary code/i }))
+
+    expect(screen.getByText('No account found for this email.')).toBeInTheDocument()
+  })
+
+  test('go to reset page button navigates', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter>
+        <ForgotPasswordForm />
+      </MemoryRouter>,
+    )
+
+    await user.click(screen.getByRole('button', { name: /go to reset page/i }))
+    expect(mockNavigate).toHaveBeenCalledWith('/reset-password')
+  })
+
+  test('dismisses success alert after code generation', async () => {
+    const user = userEvent.setup()
+    localStorage.setItem(storageKeys.USERS_KEY, JSON.stringify([
+      { email: 'person@example.com', password: 'abc123', streetAddress: '1 test', residents: [], createdAt: 'now' },
+    ]))
+
+    render(
+      <MemoryRouter>
+        <ForgotPasswordForm />
+      </MemoryRouter>,
+    )
+
+    await user.type(screen.getByLabelText('Email*'), 'person@example.com')
+    await user.click(screen.getByRole('button', { name: /send temporary code/i }))
+    await user.click(screen.getByRole('button', { name: /dismiss alert/i }))
+
+    expect(screen.queryByText(/temporary code:/i)).not.toBeInTheDocument()
   })
 })

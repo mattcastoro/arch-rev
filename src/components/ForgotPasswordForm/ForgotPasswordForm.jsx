@@ -4,10 +4,12 @@ import { useNavigate } from 'react-router-dom'
 import Alert from "../Alert/Alert"
 import Button from "../Button/Button"
 import FormField from "../FormField/FormField"
+import { createPasswordResetCode } from '../../lib/localData'
 
 function ForgotPasswordForm() {
   const navigate = useNavigate()
   const [alertMessage, setAlertMessage] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
 
   function handleSendCode(event) {
     event.preventDefault()
@@ -22,12 +24,20 @@ function ForgotPasswordForm() {
     }
 
     if (!emailInput.validity.valid) {
+      setSuccessMessage('')
       setAlertMessage('Please enter a valid email address.')
       return
     }
 
+    const resetResult = createPasswordResetCode(email)
+    if (!resetResult.ok) {
+      setSuccessMessage('')
+      setAlertMessage(resetResult.message)
+      return
+    }
+
     setAlertMessage('')
-    navigate('/reset-password')
+    setSuccessMessage(`Temporary code: ${resetResult.code}`)
   }
 
   return (
@@ -38,6 +48,15 @@ function ForgotPasswordForm() {
             {alertMessage}
           </Alert>
         )}
+        {successMessage && (
+          <Alert
+            title="Temporary code generated"
+            variant="success"
+            onDismiss={() => setSuccessMessage('')}
+          >
+            {successMessage}
+          </Alert>
+        )}
         <FormField
           label="Email"
           id="resetEmail"
@@ -45,6 +64,14 @@ function ForgotPasswordForm() {
           placeholder="you@example.com"
           required
         />
+        <Button
+          type="button"
+          variant="primary"
+          size="btn-md"
+          onClick={() => navigate('/reset-password')}
+        >
+          Go To Reset Page
+        </Button>
         <Button
           type="submit"
           variant="primary"

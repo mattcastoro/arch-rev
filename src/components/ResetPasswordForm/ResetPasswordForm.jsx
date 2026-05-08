@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import Alert from "../Alert/Alert"
 import Button from "../Button/Button"
 import FormField from "../FormField/FormField"
+import { resetPasswordWithCode } from '../../lib/localData'
 
 function ResetPasswordForm() {
   const navigate = useNavigate()
@@ -27,7 +28,14 @@ function ResetPasswordForm() {
       return
     }
 
+    const resetResult = resetPasswordWithCode(temporaryCode, newPassword)
+    if (!resetResult.ok) {
+      setAlertMessage(resetResult.message)
+      return
+    }
+
     setAlertMessage('')
+    navigate('/login')
   }
 
   return (

@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import Home from './Home'
+import { storageKeys } from '../../lib/localData'
 
 const mockNavigate = jest.fn()
 
@@ -13,6 +14,12 @@ jest.mock('react-router-dom', () => ({
 describe('Home', () => {
   beforeEach(() => {
     mockNavigate.mockReset()
+    localStorage.clear()
+    localStorage.setItem(storageKeys.SESSION_KEY, JSON.stringify({
+      email: 'resident@example.com',
+      isAuthenticated: true,
+      loginAt: 'now',
+    }))
   })
 
   test('shows Requests tab panel by default', () => {
@@ -24,6 +31,19 @@ describe('Home', () => {
 
     expect(screen.getByRole('heading', { name: /^requests$/i })).toBeInTheDocument()
     expect(screen.getByRole('tabpanel', { name: /requests/i })).toBeInTheDocument()
+    expect(screen.getByText(/signed in as resident@example.com/i)).toBeInTheDocument()
+  })
+
+  test('renders without signed-in text when no session email exists', () => {
+    localStorage.clear()
+
+    render(
+      <MemoryRouter>
+        <Home />
+      </MemoryRouter>,
+    )
+
+    expect(screen.queryByText(/signed in as/i)).not.toBeInTheDocument()
   })
 
   test('switches tabs on desktop sidebar', async () => {
@@ -150,5 +170,53 @@ describe('Home', () => {
     await user.click(mobileCreateButton)
 
     expect(mockNavigate).toHaveBeenCalledWith('/requests/new')
+  })
+
+  test('requests panel shows persisted user requests', () => {
+    localStorage.setItem(storageKeys.REQUESTS_KEY, JSON.stringify([
+      {
+        id: 'req_1',
+        ownerEmail: 'resident@example.com',
+        improvementType: 'Fence',
+        description: 'Replace front fence',
+        files: [{ name: 'fence.pdf', size: 100, type: 'application/pdf' }],
+        status: 'Submitted',
+        createdAt: 'now',
+      },
+      {
+        id: 'req_2',
+        ownerEmail: 'other@example.com',
+        improvementType: 'Paint',
+        description: 'Paint exterior',
+        files: [],
+        status: 'Submitted',
+        createdAt: 'now',
+      },
+    ]))
+
+    render(
+      <MemoryRouter>
+        <Home />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByRole('heading', { name: /fence/i })).toBeInTheDocument()
+    expect(screen.queryByText(/paint exterior/i)).not.toBeInTheDocument()
+  })
+
+  test('logout clears session and navigates to login', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter>
+        <Home />
+      </MemoryRouter>,
+    )
+
+    const logoutButtons = screen.getAllByRole('button', { name: /log out/i })
+    await user.click(logoutButtons[0])
+
+    expect(localStorage.getItem(storageKeys.SESSION_KEY)).toBeNull()
+    expect(mockNavigate).toHaveBeenCalledWith('/login')
   })
 })

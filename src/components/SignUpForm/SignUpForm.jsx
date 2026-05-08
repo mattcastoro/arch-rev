@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import Alert from "../Alert/Alert"
 import Button from "../Button/Button"
 import FormField from "../FormField/FormField"
+import { createUser, setSession } from '../../lib/localData'
 
 function SignUpForm() {
   const navigate = useNavigate()
@@ -28,6 +29,7 @@ function SignUpForm() {
     const formData = new FormData(event.currentTarget)
     const requiredFields = [
       ['streetAddress', 'Street address'],
+      ['password', 'Password'],
       ...people.flatMap((personId, index) => {
         const personLabel = `Person ${index + 1}`
 
@@ -57,7 +59,33 @@ function SignUpForm() {
       return
     }
 
+    const primaryEmail = formData.get(`email-${people[0]}`)?.trim().toLowerCase()
+    const password = formData.get('password')?.trim()
+    const streetAddress = formData.get('streetAddress')?.trim()
+    const residents = people.map((personId, index) => ({
+      id: personId,
+      role: index === 0 ? 'Primary' : 'Secondary',
+      firstName: formData.get(`firstName-${personId}`)?.trim(),
+      lastName: formData.get(`lastName-${personId}`)?.trim(),
+      email: formData.get(`email-${personId}`)?.trim().toLowerCase(),
+      phone: formData.get(`phone-${personId}`)?.trim(),
+    }))
+
+    const createUserResult = createUser({
+      email: primaryEmail,
+      password,
+      streetAddress,
+      residents,
+    })
+
+    if (!createUserResult.ok) {
+      setAlertMessage(createUserResult.message)
+      return
+    }
+
+    setSession(primaryEmail)
     setAlertMessage('')
+    navigate('/home')
   }
 
   return (
@@ -72,6 +100,13 @@ function SignUpForm() {
           label="Street Address"
           id="streetAddress"
           type="text"
+          placeholder=""
+          required
+        />
+        <FormField
+          label="Create Password"
+          id="password"
+          type="password"
           placeholder=""
           required
         />

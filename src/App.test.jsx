@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import App from './App'
+import { storageKeys } from './lib/localData'
 
 function renderAt(route) {
   return render(
@@ -11,6 +12,10 @@ function renderAt(route) {
 }
 
 describe('App routes', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
   test('redirects / to login page', async () => {
     renderAt('/')
     expect(await screen.findByRole('button', { name: /log in/i })).toBeInTheDocument()
@@ -31,12 +36,32 @@ describe('App routes', () => {
     expect(screen.getByRole('button', { name: /reset password/i })).toBeInTheDocument()
   })
 
-  test('renders home page', () => {
+  test('protected home redirects to login when unauthenticated', async () => {
+    renderAt('/home')
+    expect(await screen.findByRole('button', { name: /log in/i })).toBeInTheDocument()
+  })
+
+  test('renders home page when authenticated', () => {
+    localStorage.setItem(storageKeys.SESSION_KEY, JSON.stringify({
+      email: 'person@example.com',
+      isAuthenticated: true,
+      loginAt: 'now',
+    }))
     renderAt('/home')
     expect(screen.getByRole('heading', { name: /architectural review dashboard/i })).toBeInTheDocument()
   })
 
-  test('renders new request page', () => {
+  test('protected new request redirects to login when unauthenticated', async () => {
+    renderAt('/requests/new')
+    expect(await screen.findByRole('button', { name: /log in/i })).toBeInTheDocument()
+  })
+
+  test('renders new request page when authenticated', () => {
+    localStorage.setItem(storageKeys.SESSION_KEY, JSON.stringify({
+      email: 'person@example.com',
+      isAuthenticated: true,
+      loginAt: 'now',
+    }))
     renderAt('/requests/new')
     expect(screen.getByRole('heading', { name: /create new request/i })).toBeInTheDocument()
   })

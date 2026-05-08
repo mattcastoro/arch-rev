@@ -30,4 +30,38 @@ describe('FormField', () => {
     expect(input).toHaveAttribute('placeholder', '555-555-5555')
     expect(input).not.toBeRequired()
   })
+
+  test('renders a select field', () => {
+    render(
+      <FormField
+        as="select"
+        label="Improvement Type"
+        id="improvementType"
+        required
+        options={[
+          { label: 'Paint', value: 'Paint' },
+          { label: 'Fence', value: 'Fence' },
+        ]}
+      />,
+    )
+
+    const select = screen.getByLabelText('Improvement Type*')
+    expect(select).toBeInTheDocument()
+    expect(screen.getByRole('option', { name: 'Paint' })).toBeInTheDocument()
+  })
+
+  test('renders a textarea field', () => {
+    render(
+      <FormField
+        as="textarea"
+        label="Description"
+        id="description"
+        rows={6}
+      />,
+    )
+
+    const textarea = screen.getByLabelText('Description')
+    expect(textarea).toBeInTheDocument()
+    expect(textarea).toHaveAttribute('rows', '6')
+  })
 })

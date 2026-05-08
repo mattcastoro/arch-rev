@@ -1,7 +1,8 @@
 import './Home.css'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Button from '../../components/Button/Button'
+import { clearSession, getCurrentUserEmail, getRequestsByOwner } from '../../lib/localData'
 
 const tabs = [
   { id: 'requests', label: 'Requests' },
@@ -9,24 +10,27 @@ const tabs = [
   { id: 'support', label: 'Support' },
 ]
 
-function RequestsPanel() {
+function RequestsPanel({ requests }) {
   return (
     <section className="home-panel" role="tabpanel" aria-label="Requests">
       <h2>Requests</h2>
-      <div className="home-grid">
+      {requests.length === 0 ? (
         <article className="home-card">
-          <h3>Pending Review</h3>
-          <p>2 open requests waiting for committee review.</p>
+          <h3>No requests yet</h3>
+          <p>Create your first request to begin the architectural review workflow.</p>
         </article>
-        <article className="home-card">
-          <h3>Recent Decisions</h3>
-          <p>1 request approved in the last 30 days.</p>
-        </article>
-      </div>
-      <article className="home-card">
-        <h3>Request Timeline</h3>
-        <p>Status updates for each submission will appear here as your project moves from submitted to decisioned.</p>
-      </article>
+      ) : (
+        <div className="home-grid">
+          {requests.map((request) => (
+            <article className="home-card" key={request.id}>
+              <h3>{request.improvementType}</h3>
+              <p>{request.description}</p>
+              <p className="home-card__meta">Status: {request.status}</p>
+              <p className="home-card__meta">Files: {request.files.length}</p>
+            </article>
+          ))}
+        </div>
+      )}
     </section>
   )
 }
@@ -80,6 +84,15 @@ function Home() {
   const [activeTab, setActiveTab] = useState('requests')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [requests, setRequests] = useState([])
+  const [currentEmail, setCurrentEmail] = useState('')
+
+  useEffect(() => {
+    const email = getCurrentUserEmail()
+    if (!email) return
+    setCurrentEmail(email)
+    setRequests(getRequestsByOwner(email))
+  }, [])
 
   function handleSelectTab(tabId) {
     setActiveTab(tabId)
@@ -89,7 +102,12 @@ function Home() {
   function renderActivePanel() {
     if (activeTab === 'profile') return <ProfilePanel />
     if (activeTab === 'support') return <SupportPanel />
-    return <RequestsPanel />
+    return <RequestsPanel requests={requests} />
+  }
+
+  function handleLogout() {
+    clearSession()
+    navigate('/login')
   }
 
   return (
@@ -98,6 +116,7 @@ function Home() {
         <div className="home-topbar__brand">
           <h1>Architectural Review Dashboard</h1>
           <p>Manage requests, profile details, and support resources in one place.</p>
+          {currentEmail && <p className="home-topbar__user">Signed in as {currentEmail}</p>}
         </div>
         <div className="home-topbar__actions">
           <Button
@@ -117,6 +136,9 @@ function Home() {
           >
             Menu
           </button>
+          <Button type="button" variant="secondary" size="btn-sm" onClick={handleLogout}>
+            Log Out
+          </Button>
         </div>
       </header>
 
@@ -179,6 +201,9 @@ function Home() {
                 </button>
               ))}
             </nav>
+            <Button type="button" variant="secondary" size="btn-sm" onClick={handleLogout}>
+              Log Out
+            </Button>
           </aside>
         </>
       )}

@@ -25,6 +25,12 @@
   color: var(--gray-600);
 }
 
+.home-topbar__brand .home-topbar__user {
+  margin-top: 0.375rem;
+  color: var(--gray-500);
+  font-size: var(--font-size-small);
+}
+
 .home-topbar__actions {
   display: flex;
   align-items: center;
@@ -104,6 +110,12 @@
 .home-card p {
   margin: 0;
   color: var(--gray-600);
+}
+
+.home-card .home-card__meta {
+  margin-top: 0.35rem;
+  color: var(--gray-500);
+  font-size: var(--font-size-small);
 }
 
 .home-mobile-create {

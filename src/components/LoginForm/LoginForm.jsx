@@ -5,6 +5,7 @@ import Alert from "../Alert/Alert"
 import Button from "../Button/Button"
 import FormField from "../FormField/FormField"
 import Paragraph from "../Paragraph/Paragraph"
+import { setSession, validateLogin } from '../../lib/localData'
 
 function LoginForm() {
   const navigate = useNavigate()
@@ -28,7 +29,15 @@ function LoginForm() {
       return
     }
 
+    const loginResult = validateLogin(email, password)
+    if (!loginResult.ok) {
+      setAlertMessage(loginResult.message)
+      return
+    }
+
+    setSession(email)
     setAlertMessage('')
+    navigate('/home')
   }
 
   return (
