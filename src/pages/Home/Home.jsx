@@ -10,10 +10,21 @@ const tabs = [
   { id: 'support', label: 'Support' },
 ]
 
-function RequestsPanel({ requests }) {
+function RequestsPanel({ requests, onCreateRequest }) {
   return (
     <section className="home-panel" role="tabpanel" aria-label="Requests">
-      <h2>Requests</h2>
+      <div className="home-panel__header">
+        <h2>Requests</h2>
+        <button
+          type="button"
+          className="home-create-request"
+          aria-label="Create New Request"
+          onClick={onCreateRequest}
+        >
+          <span aria-hidden="true">+</span>
+          <span className="home-create-request__label" aria-hidden="true">Create New Request</span>
+        </button>
+      </div>
       {requests.length === 0 ? (
         <article className="home-card">
           <h3>No requests yet</h3>
@@ -102,7 +113,7 @@ function Home() {
   function renderActivePanel() {
     if (activeTab === 'profile') return <ProfilePanel />
     if (activeTab === 'support') return <SupportPanel />
-    return <RequestsPanel requests={requests} />
+    return <RequestsPanel requests={requests} onCreateRequest={() => setIsCreateModalOpen(true)} />
   }
 
   function handleLogout() {
@@ -119,15 +130,6 @@ function Home() {
           {currentEmail && <p className="home-topbar__user">Signed in as {currentEmail}</p>}
         </div>
         <div className="home-topbar__actions">
-          <Button
-            type="button"
-            variant="primary"
-            size="btn-md"
-            className="home-desktop-create"
-            onClick={() => setIsCreateModalOpen(true)}
-          >
-            Create New Request
-          </Button>
           <button
             type="button"
             className="home-menu-btn"
@@ -136,7 +138,13 @@ function Home() {
           >
             Menu
           </button>
-          <Button type="button" variant="secondary" size="btn-sm" onClick={handleLogout}>
+          <Button
+            type="button"
+            variant="secondary"
+            size="btn-md"
+            className="home-desktop-logout"
+            onClick={handleLogout}
+          >
             Log Out
           </Button>
         </div>

@@ -89,6 +89,65 @@
   margin: 0 0 0.75rem;
 }
 
+.home-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.home-panel__header h2 {
+  margin: 0;
+}
+
+.home-create-request {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  border: 1px solid var(--primary-500);
+  border-radius: 0.375rem;
+  background: var(--primary-500);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.25;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.25s ease, border-color 0.25s ease, gap 0.25s ease;
+}
+
+.home-create-request:hover {
+  background: var(--primary-700);
+  border-color: var(--primary-700);
+}
+
+.home-create-request:focus,
+.home-create-request:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+}
+
+.home-create-request__label {
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-width 0.25s ease, opacity 0.2s ease;
+}
+
+.home-create-request:hover .home-create-request__label,
+.home-create-request:focus-visible .home-create-request__label {
+  max-width: 12rem;
+  opacity: 1;
+}
+
+.home-create-request:hover,
+.home-create-request:focus-visible {
+  gap: 0.5rem;
+}
+
 .home-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -118,6 +177,13 @@
   font-size: var(--font-size-small);
 }
 
+.home-mobile-overlay {
+  position: fixed;
+  inset: 0;
+  border: none;
+  background: rgba(17, 24, 39, 0.35);
+}
+
 .home-mobile-create {
   position: fixed;
   left: 0;
@@ -126,13 +192,6 @@
   padding: 0.75rem;
   background: linear-gradient(to top, var(--background-light), rgba(255, 253, 248, 0.8));
   border-top: 1px solid var(--gray-200);
-}
-
-.home-mobile-overlay {
-  position: fixed;
-  inset: 0;
-  border: none;
-  background: rgba(17, 24, 39, 0.35);
 }
 
 .home-mobile-drawer {
@@ -219,7 +278,7 @@
   justify-content: flex-end;
 }
 
-.home-desktop-create {
+.home-desktop-logout {
   display: none;
 }
 
@@ -228,13 +287,24 @@
     padding-bottom: 0;
   }
 
-  .home-menu-btn,
+  .home-menu-btn {
+    display: none;
+  }
+
   .home-mobile-create {
     display: none;
   }
 
-  .home-desktop-create {
+  .home-create-request {
     display: inline-flex;
+  }
+
+  .home-desktop-logout {
+    display: inline-flex;
+  }
+
+  .home-desktop-logout {
+    white-space: nowrap;
   }
 
   .home-layout {

@@ -62,7 +62,7 @@ describe('Home', () => {
     expect(screen.getByRole('tabpanel', { name: /support/i })).toBeInTheDocument()
   })
 
-  test('opens and closes create modal from desktop button', async () => {
+  test('opens and closes create modal from the Requests panel button', async () => {
     const user = userEvent.setup()
     const { container } = render(
       <MemoryRouter>
@@ -70,10 +70,10 @@ describe('Home', () => {
       </MemoryRouter>,
     )
 
-    const desktopCreateButton = container.querySelector('.home-desktop-create')
-    expect(desktopCreateButton).not.toBeNull()
+    const createButton = container.querySelector('.home-create-request')
+    expect(createButton).not.toBeNull()
 
-    await user.click(desktopCreateButton)
+    await user.click(createButton)
     expect(screen.getByRole('dialog', { name: /create request modal/i })).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /close create request modal/i }))
@@ -88,10 +88,10 @@ describe('Home', () => {
       </MemoryRouter>,
     )
 
-    const desktopCreateButton = container.querySelector('.home-desktop-create')
-    expect(desktopCreateButton).not.toBeNull()
+    const createButton = container.querySelector('.home-create-request')
+    expect(createButton).not.toBeNull()
 
-    await user.click(desktopCreateButton)
+    await user.click(createButton)
     expect(screen.getByRole('dialog', { name: /create request modal/i })).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /^close$/i }))
@@ -157,6 +157,17 @@ describe('Home', () => {
     expect(screen.queryByRole('heading', { name: /sections/i })).not.toBeInTheDocument()
   })
 
+  test('renders the desktop create control in the Requests panel', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <Home />
+      </MemoryRouter>,
+    )
+
+    expect(container.querySelector('.home-panel__header .home-create-request')).not.toBeNull()
+    expect(container.querySelector('.home-mobile-create')).not.toBeNull()
+  })
+
   test('mobile create button navigates to new request page', async () => {
     const user = userEvent.setup()
     const { container } = render(
@@ -165,10 +176,7 @@ describe('Home', () => {
       </MemoryRouter>,
     )
 
-    const mobileCreateButton = container.querySelector('.home-mobile-create button')
-    expect(mobileCreateButton).not.toBeNull()
-    await user.click(mobileCreateButton)
-
+    await user.click(container.querySelector('.home-mobile-create button'))
     expect(mockNavigate).toHaveBeenCalledWith('/requests/new')
   })
 
