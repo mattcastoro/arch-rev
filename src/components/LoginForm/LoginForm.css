@@ -41,7 +41,7 @@
 @media (min-width: 768px) {
   .login-form {
     text-align: left;
-    padding-left: 4rem;
+    /* padding-left: 4rem; */
     align-items: flex-start;
   }
 
