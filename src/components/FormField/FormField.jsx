@@ -12,24 +12,24 @@ function FormField({
   options = [],
   rows = 4,
 }) {
+  const fieldPlaceholder = `${placeholder || label}${required ? ' *' : ''}`
+  const accessibleLabel = required ? `${label}*` : label
+
   return (
     <div className={`field field--${labelPosition}`}>
-      <label htmlFor={id} className='label'>
-        {label}
-        {required && <span className='required'>*</span>}
-      </label>
       {as === 'textarea' ? (
         <textarea
           id={id}
           name={name}
-          placeholder={placeholder}
+          aria-label={accessibleLabel}
+          placeholder={fieldPlaceholder}
           required={required}
           rows={rows}
         />
       ) : null}
       {as === 'select' ? (
-        <select id={id} name={name} required={required} defaultValue="">
-          <option value="" disabled>Select an option</option>
+        <select id={id} name={name} aria-label={accessibleLabel} required={required} defaultValue="">
+          <option value="" disabled>{fieldPlaceholder}</option>
           {options.map((option) => (
             <option key={option.value} value={option.value}>{option.label}</option>
           ))}
@@ -40,7 +40,8 @@ function FormField({
           id={id}
           name={name}
           type={type}
-          placeholder={placeholder}
+          aria-label={accessibleLabel}
+          placeholder={fieldPlaceholder}
           required={required}
         />
       ) : null}

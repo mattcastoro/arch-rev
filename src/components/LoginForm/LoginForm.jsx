@@ -53,14 +53,12 @@ function LoginForm() {
             label="Email"
             id="email"
             type="email"
-            placeholder="tonystark@marvel.com"
             required
           />
           <FormField
             label="Password"
             id="password"
             type="password"
-            placeholder="***"
             required
           />
         </div>

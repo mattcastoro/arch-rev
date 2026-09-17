@@ -50,21 +50,18 @@ function ResetPasswordForm() {
           label="Temporary Code"
           id="temporaryCode"
           type="text"
-          placeholder="Enter code from email"
           required
         />
         <FormField
           label="New Password"
           id="newPassword"
           type="password"
-          placeholder=""
           required
         />
         <FormField
           label="Confirm New Password"
           id="confirmNewPassword"
           type="password"
-          placeholder=""
           required
         />
         <Button type="submit" variant="primary" size="btn-md">Reset Password</Button>

@@ -100,14 +100,12 @@ function SignUpForm() {
           label="Street Address"
           id="streetAddress"
           type="text"
-          placeholder=""
           required
         />
         <FormField
           label="Create Password"
           id="password"
           type="password"
-          placeholder=""
           required
         />
         <div className="divider"></div>
@@ -132,14 +130,12 @@ function SignUpForm() {
                   label="First Name"
                   id={`firstName-${personId}`}
                   type="text"
-                  placeholder=""
                   required
                 />
                 <FormField
                   label="Last Name"
                   id={`lastName-${personId}`}
                   type="text"
-                  placeholder=""
                   required
                 />
               </div>
@@ -148,14 +144,12 @@ function SignUpForm() {
                   label="Email"
                   id={`email-${personId}`}
                   type="email"
-                  placeholder=""
                   required
                 />
                 <FormField
                   label="Phone"
                   id={`phone-${personId}`}
                   type="tel"
-                  placeholder=""
                   required
                 />
               </div>

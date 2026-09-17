@@ -80,16 +80,18 @@ function RequestsNew() {
           as="textarea"
           label="Description"
           id="description"
-          placeholder="Describe the planned improvement and any important project details."
           rows={6}
           required
         />
 
         <div className="field field--left">
-          <label htmlFor="supportingDocs" className="label">
-            Supporting Documentation
-          </label>
-          <input id="supportingDocs" name="supportingDocs" type="file" multiple />
+          <input
+            id="supportingDocs"
+            name="supportingDocs"
+            type="file"
+            aria-label="Supporting Documentation"
+            multiple
+          />
         </div>
 
         <div className="requests-new-actions">

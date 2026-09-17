@@ -61,7 +61,6 @@ function ForgotPasswordForm() {
           label="Email"
           id="resetEmail"
           type="email"
-          placeholder="you@example.com"
           required
         />
         <Button
