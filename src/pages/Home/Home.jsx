@@ -132,11 +132,21 @@ function Home() {
         <div className="home-topbar__actions">
           <button
             type="button"
-            className="home-menu-btn"
-            aria-label="Open navigation menu"
-            onClick={() => setIsMobileMenuOpen(true)}
+            className={`home-menu-btn ${isMobileMenuOpen ? 'is-open' : ''}`}
+            aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="mobile-navigation-menu"
+            onClick={() => setIsMobileMenuOpen((isOpen) => !isOpen)}
           >
-            Menu
+            {isMobileMenuOpen ? (
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="m6 6 12 12M18 6 6 18" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M4 7h16M4 12h16M4 17h16" />
+              </svg>
+            )}
           </button>
           <Button
             type="button"
@@ -179,20 +189,12 @@ function Home() {
           <button
             type="button"
             className="home-mobile-overlay"
-            aria-label="Close navigation menu"
+            aria-label="Dismiss navigation menu"
             onClick={() => setIsMobileMenuOpen(false)}
           />
-          <aside className="home-mobile-drawer">
+          <aside id="mobile-navigation-menu" className="home-mobile-drawer">
             <div className="home-mobile-drawer__header">
               <h2>Sections</h2>
-              <button
-                type="button"
-                className="home-mobile-drawer__close"
-                aria-label="Close navigation menu"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                x
-              </button>
             </div>
             <nav className="home-mobile-tabs" role="tablist" aria-label="Mobile home sections">
               {tabs.map((tab) => (
@@ -209,7 +211,13 @@ function Home() {
                 </button>
               ))}
             </nav>
-            <Button type="button" variant="secondary" size="btn-sm" onClick={handleLogout}>
+            <Button
+              type="button"
+              variant="secondary"
+              size="btn-sm"
+              className="home-mobile-logout"
+              onClick={handleLogout}
+            >
               Log Out
             </Button>
           </aside>

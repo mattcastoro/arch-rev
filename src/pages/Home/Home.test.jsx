@@ -120,6 +120,32 @@ describe('Home', () => {
     expect(screen.getByRole('tabpanel', { name: /support/i })).toBeInTheDocument()
   })
 
+  test('hamburger menu keeps every mobile navigation option available', async () => {
+    const user = userEvent.setup()
+    const { container } = render(
+      <MemoryRouter>
+        <Home />
+      </MemoryRouter>,
+    )
+
+    const menuButton = screen.getByRole('button', { name: /open navigation menu/i })
+    expect(menuButton).toHaveAttribute('aria-expanded', 'false')
+    expect(menuButton).not.toHaveTextContent(/menu/i)
+    expect(menuButton.querySelector('svg')).not.toBeNull()
+
+    await user.click(menuButton)
+
+    const drawer = container.querySelector('#mobile-navigation-menu')
+    expect(drawer).not.toBeNull()
+    expect(menuButton).toHaveAttribute('aria-expanded', 'true')
+    expect(within(drawer).getByRole('tab', { name: /requests section/i })).toBeInTheDocument()
+    expect(within(drawer).getByRole('tab', { name: /profile section/i })).toBeInTheDocument()
+    expect(within(drawer).getByRole('tab', { name: /support section/i })).toBeInTheDocument()
+    expect(within(drawer).getByRole('button', { name: /log out/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /close navigation menu/i })).toBe(menuButton)
+    expect(container.querySelector('.home-mobile-create button')).toHaveAccessibleName(/create new request/i)
+  })
+
   test('mobile overlay closes drawer', async () => {
     const user = userEvent.setup()
 
@@ -151,8 +177,7 @@ describe('Home', () => {
     await user.click(screen.getByRole('button', { name: /open navigation menu/i }))
     expect(screen.getByRole('heading', { name: /sections/i })).toBeInTheDocument()
 
-    const closeButtons = screen.getAllByRole('button', { name: /close navigation menu/i })
-    await user.click(closeButtons[1])
+    await user.click(screen.getByRole('button', { name: /close navigation menu/i }))
 
     expect(screen.queryByRole('heading', { name: /sections/i })).not.toBeInTheDocument()
   })
