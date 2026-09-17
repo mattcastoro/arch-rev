@@ -33,3 +33,12 @@ input:focus, textarea:focus, select:focus {
   border-color: var(--primary-500);
   box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
 }
+
+.field__control--invalid {
+  border-color: var(--error);
+}
+
+.field__control--invalid:focus {
+  border-color: var(--error);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}

@@ -10,6 +10,7 @@ import { setSession, validateLogin } from '../../lib/localData'
 function LoginForm() {
   const navigate = useNavigate()
   const [alertMessage, setAlertMessage] = useState('')
+  const [invalidFields, setInvalidFields] = useState([])
 
   function handleSubmit(event) {
     event.preventDefault()
@@ -19,23 +20,28 @@ function LoginForm() {
     const password = formData.get('password')?.trim()
     const emailInput = event.currentTarget.elements.email
 
-    if (!email || !password) {
-      setAlertMessage('Email and password are required before logging in.')
+    const missingFields = ['email', 'password'].filter((field) => !formData.get(field)?.trim())
+    if (missingFields.length > 0) {
+      setInvalidFields(missingFields)
+      setAlertMessage('Please complete the highlighted fields.')
       return
     }
 
     if (!emailInput.validity.valid) {
-      setAlertMessage('Please enter a valid email address.')
+      setInvalidFields(['email'])
+      setAlertMessage('Please complete the highlighted fields.')
       return
     }
 
     const loginResult = validateLogin(email, password)
     if (!loginResult.ok) {
+      setInvalidFields([loginResult.message === 'Incorrect password.' ? 'password' : 'email'])
       setAlertMessage(loginResult.message)
       return
     }
 
     setSession(email)
+    setInvalidFields([])
     setAlertMessage('')
     navigate('/home')
   }
@@ -44,7 +50,7 @@ function LoginForm() {
     <div className="login-container">
       <form className="login-form" noValidate onSubmit={handleSubmit}>
         {alertMessage && (
-          <Alert onDismiss={() => setAlertMessage('')}>
+          <Alert onDismiss={() => { setAlertMessage(''); setInvalidFields([]) }}>
             {alertMessage}
           </Alert>
         )}
@@ -54,12 +60,14 @@ function LoginForm() {
             id="email"
             type="email"
             required
+            invalid={invalidFields.includes('email')}
           />
           <FormField
             label="Password"
             id="password"
             type="password"
             required
+            invalid={invalidFields.includes('password')}
           />
         </div>
         <div className="form-actions">

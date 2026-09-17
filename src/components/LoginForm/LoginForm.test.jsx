@@ -29,7 +29,7 @@ describe('LoginForm', () => {
     await user.click(screen.getByRole('button', { name: /log in/i }))
 
     expect(
-      screen.getByText('Email and password are required before logging in.'),
+      screen.getByText('Please complete the highlighted fields.'),
     ).toBeInTheDocument()
   })
 
@@ -60,7 +60,8 @@ describe('LoginForm', () => {
     await user.type(screen.getByLabelText('Password*'), 'abc123')
     await user.click(screen.getByRole('button', { name: /log in/i }))
 
-    expect(screen.getByText('Please enter a valid email address.')).toBeInTheDocument()
+    expect(screen.getByText('Please complete the highlighted fields.')).toBeInTheDocument()
+    expect(screen.getByLabelText('Email*')).toHaveAttribute('aria-invalid', 'true')
   })
 
   test('shows error for unknown email account', async () => {

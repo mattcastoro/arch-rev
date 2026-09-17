@@ -58,7 +58,9 @@ describe('RequestsNew', () => {
     )
 
     await user.click(screen.getByRole('button', { name: /submit request/i }))
-    expect(screen.getByText('Improvement type and description are required.')).toBeInTheDocument()
+    expect(screen.getByText('Please complete the highlighted fields.')).toBeInTheDocument()
+    expect(screen.getByLabelText('Improvement Type*')).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getByLabelText('Description*')).toHaveAttribute('aria-invalid', 'true')
   })
 
   test('submits request and stores metadata', async () => {

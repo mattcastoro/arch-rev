@@ -16,6 +16,7 @@ const improvementOptions = [
 function RequestsNew() {
   const navigate = useNavigate()
   const [alertMessage, setAlertMessage] = useState('')
+  const [invalidFields, setInvalidFields] = useState([])
 
   function handleSubmit(event) {
     event.preventDefault()
@@ -33,7 +34,11 @@ function RequestsNew() {
     const selectedFiles = event.currentTarget.elements.supportingDocs.files
 
     if (!improvementType || !description) {
-      setAlertMessage('Improvement type and description are required.')
+      setInvalidFields([
+        ...(!improvementType ? ['improvementType'] : []),
+        ...(!description ? ['description'] : []),
+      ])
+      setAlertMessage('Please complete the highlighted fields.')
       return
     }
 
@@ -51,6 +56,7 @@ function RequestsNew() {
     })
 
     setAlertMessage('')
+    setInvalidFields([])
     navigate('/home')
   }
 
@@ -63,7 +69,7 @@ function RequestsNew() {
 
       <form className="requests-new-form" noValidate onSubmit={handleSubmit}>
         {alertMessage && (
-          <Alert onDismiss={() => setAlertMessage('')}>
+          <Alert onDismiss={() => { setAlertMessage(''); setInvalidFields([]) }}>
             {alertMessage}
           </Alert>
         )}
@@ -74,6 +80,7 @@ function RequestsNew() {
           id="improvementType"
           options={improvementOptions}
           required
+          invalid={invalidFields.includes('improvementType')}
         />
 
         <FormField
@@ -82,6 +89,7 @@ function RequestsNew() {
           id="description"
           rows={6}
           required
+          invalid={invalidFields.includes('description')}
         />
 
         <div className="field field--left">

@@ -2,14 +2,14 @@ import './Alert.css'
 
 function Alert({
   children,
-  title = 'Please check the form',
+  title,
   variant = 'error',
   onDismiss,
 }) {
   return (
     <div className={`alert alert--${variant}`} role="alert">
       <div className="alert__content">
-        <p className="alert__title">{title}</p>
+        {title && <p className="alert__title">{title}</p>}
         {children && <p className="alert__message">{children}</p>}
       </div>
       {onDismiss && (

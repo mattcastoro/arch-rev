@@ -29,7 +29,7 @@ describe('ResetPasswordForm', () => {
     await user.click(screen.getByRole('button', { name: /reset password/i }))
 
     expect(
-      screen.getByText('Temporary code and both password fields are required.'),
+      screen.getByText('Please complete the highlighted fields.'),
     ).toBeInTheDocument()
   })
 
@@ -48,7 +48,7 @@ describe('ResetPasswordForm', () => {
     await user.click(screen.getByRole('button', { name: /reset password/i }))
 
     expect(
-      screen.getByText('New password and confirmation password must match.'),
+      screen.getByText('Please complete the highlighted fields.'),
     ).toBeInTheDocument()
   })
 
@@ -120,6 +120,7 @@ describe('ResetPasswordForm', () => {
     await user.type(screen.getByLabelText(/confirm new password/i, { selector: '#confirmNewPassword' }), 'Password1!')
     await user.click(screen.getByRole('button', { name: /reset password/i }))
 
-    expect(screen.getByText('Temporary code is invalid or expired.')).toBeInTheDocument()
+    expect(screen.getByText('Please complete the highlighted fields.')).toBeInTheDocument()
+    expect(screen.getByLabelText(/temporary code/i)).toHaveAttribute('aria-invalid', 'true')
   })
 })

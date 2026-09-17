@@ -11,6 +11,7 @@ function SignUpForm() {
   const [alertMessage, setAlertMessage] = useState('')
   const [people, setPeople] = useState([1])
   const [nextPersonId, setNextPersonId] = useState(2)
+  const [invalidFields, setInvalidFields] = useState([])
 
   function handleAddPerson() {
     setPeople((currentPeople) => [...currentPeople, nextPersonId])
@@ -47,7 +48,8 @@ function SignUpForm() {
       .map(([, label]) => label)
 
     if (missingFields.length > 0) {
-      setAlertMessage(`Please complete: ${missingFields.join(', ')}.`)
+      setInvalidFields(requiredFields.filter(([name]) => !formData.get(name)?.trim()).map(([name]) => name))
+      setAlertMessage('Please complete the highlighted fields.')
       return
     }
 
@@ -55,7 +57,8 @@ function SignUpForm() {
     const hasInvalidEmail = Array.from(emailInputs).some((emailInput) => !emailInput.validity.valid)
 
     if (hasInvalidEmail) {
-      setAlertMessage('Please enter a valid email address.')
+      setInvalidFields(Array.from(emailInputs).filter((emailInput) => !emailInput.validity.valid).map((emailInput) => emailInput.name))
+      setAlertMessage('Please complete the highlighted fields.')
       return
     }
 
@@ -79,11 +82,13 @@ function SignUpForm() {
     })
 
     if (!createUserResult.ok) {
+      setInvalidFields([`email-${people[0]}`])
       setAlertMessage(createUserResult.message)
       return
     }
 
     setSession(primaryEmail)
+    setInvalidFields([])
     setAlertMessage('')
     navigate('/home')
   }
@@ -92,7 +97,7 @@ function SignUpForm() {
     <div className='signUp-container'>
       <form className="signUp-form" noValidate onSubmit={handleSubmit}>
         {alertMessage && (
-          <Alert onDismiss={() => setAlertMessage('')}>
+          <Alert onDismiss={() => { setAlertMessage(''); setInvalidFields([]) }}>
             {alertMessage}
           </Alert>
         )}
@@ -101,12 +106,14 @@ function SignUpForm() {
           id="streetAddress"
           type="text"
           required
+          invalid={invalidFields.includes('streetAddress')}
         />
         <FormField
           label="Create Password"
           id="password"
           type="password"
           required
+          invalid={invalidFields.includes('password')}
         />
         <div className="divider"></div>
         <div className="people-fields">
@@ -131,12 +138,14 @@ function SignUpForm() {
                   id={`firstName-${personId}`}
                   type="text"
                   required
+                  invalid={invalidFields.includes(`firstName-${personId}`)}
                 />
                 <FormField
                   label="Last Name"
                   id={`lastName-${personId}`}
                   type="text"
                   required
+                  invalid={invalidFields.includes(`lastName-${personId}`)}
                 />
               </div>
               <div className="form-fields">
@@ -145,12 +154,14 @@ function SignUpForm() {
                   id={`email-${personId}`}
                   type="email"
                   required
+                  invalid={invalidFields.includes(`email-${personId}`)}
                 />
                 <FormField
                   label="Phone"
                   id={`phone-${personId}`}
                   type="tel"
                   required
+                  invalid={invalidFields.includes(`phone-${personId}`)}
                 />
               </div>
             </section>

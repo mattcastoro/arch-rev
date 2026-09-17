@@ -29,7 +29,7 @@ describe('ForgotPasswordForm', () => {
     await user.click(screen.getByRole('button', { name: /send temporary code/i }))
 
     expect(
-      screen.getByText('Email is required to send a temporary code.'),
+      screen.getByText('Please complete the highlighted fields.'),
     ).toBeInTheDocument()
     expect(mockNavigate).not.toHaveBeenCalled()
   })
@@ -65,7 +65,8 @@ describe('ForgotPasswordForm', () => {
     await user.type(screen.getByLabelText('Email*'), 'bad-email')
     await user.click(screen.getByRole('button', { name: /send temporary code/i }))
 
-    expect(screen.getByText('Please enter a valid email address.')).toBeInTheDocument()
+    expect(screen.getByText('Please complete the highlighted fields.')).toBeInTheDocument()
+    expect(screen.getByLabelText('Email*')).toHaveAttribute('aria-invalid', 'true')
     expect(mockNavigate).not.toHaveBeenCalled()
   })
 

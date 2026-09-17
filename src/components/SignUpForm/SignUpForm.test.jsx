@@ -79,7 +79,8 @@ describe('SignUpForm', () => {
 
     await user.click(screen.getByRole('button', { name: /^create$/i }))
 
-    expect(screen.getByText(/please complete:/i)).toBeInTheDocument()
+    expect(screen.getByText('Please complete the highlighted fields.')).toBeInTheDocument()
+    expect(screen.getByLabelText('Street Address*')).toHaveAttribute('aria-invalid', 'true')
   })
 
   test('shows validation for invalid email', async () => {
@@ -99,7 +100,8 @@ describe('SignUpForm', () => {
     await user.type(screen.getByLabelText('Phone*'), '5551234567')
     await user.click(screen.getByRole('button', { name: /^create$/i }))
 
-    expect(screen.getByText('Please enter a valid email address.')).toBeInTheDocument()
+    expect(screen.getByText('Please complete the highlighted fields.')).toBeInTheDocument()
+    expect(screen.getByLabelText('Email*')).toHaveAttribute('aria-invalid', 'true')
   })
 
   test('cancel navigates to login', async () => {

@@ -22,7 +22,7 @@ describe('Alert', () => {
 
   test('renders without message and without dismiss button', () => {
     render(<Alert />)
-    expect(screen.getByText('Please check the form')).toBeInTheDocument()
+    expect(screen.queryByText('Please check the form')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /dismiss alert/i })).not.toBeInTheDocument()
   })
 })

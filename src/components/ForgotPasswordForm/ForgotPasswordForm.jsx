@@ -10,6 +10,7 @@ function ForgotPasswordForm() {
   const navigate = useNavigate()
   const [alertMessage, setAlertMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
+  const [invalidFields, setInvalidFields] = useState([])
 
   function handleSendCode(event) {
     event.preventDefault()
@@ -19,24 +20,28 @@ function ForgotPasswordForm() {
     const emailInput = event.currentTarget.elements.resetEmail
 
     if (!email) {
-      setAlertMessage('Email is required to send a temporary code.')
+      setInvalidFields(['resetEmail'])
+      setAlertMessage('Please complete the highlighted fields.')
       return
     }
 
     if (!emailInput.validity.valid) {
       setSuccessMessage('')
-      setAlertMessage('Please enter a valid email address.')
+      setInvalidFields(['resetEmail'])
+      setAlertMessage('Please complete the highlighted fields.')
       return
     }
 
     const resetResult = createPasswordResetCode(email)
     if (!resetResult.ok) {
       setSuccessMessage('')
+      setInvalidFields(['resetEmail'])
       setAlertMessage(resetResult.message)
       return
     }
 
     setAlertMessage('')
+    setInvalidFields([])
     setSuccessMessage(`Temporary code: ${resetResult.code}`)
   }
 
@@ -44,7 +49,7 @@ function ForgotPasswordForm() {
     <div className="forgot-password-container">
       <form className="forgot-password-form" noValidate onSubmit={handleSendCode}>
         {alertMessage && (
-          <Alert onDismiss={() => setAlertMessage('')}>
+          <Alert onDismiss={() => { setAlertMessage(''); setInvalidFields([]) }}>
             {alertMessage}
           </Alert>
         )}
@@ -62,6 +67,7 @@ function ForgotPasswordForm() {
           id="resetEmail"
           type="email"
           required
+          invalid={invalidFields.includes('resetEmail')}
         />
         <Button
           type="button"

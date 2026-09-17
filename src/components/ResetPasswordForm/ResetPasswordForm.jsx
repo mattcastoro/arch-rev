@@ -9,6 +9,7 @@ import { resetPasswordWithCode } from '../../lib/localData'
 function ResetPasswordForm() {
   const navigate = useNavigate()
   const [alertMessage, setAlertMessage] = useState('')
+  const [invalidFields, setInvalidFields] = useState([])
 
   function handleResetPassword(event) {
     event.preventDefault()
@@ -18,23 +19,32 @@ function ResetPasswordForm() {
     const newPassword = formData.get('newPassword')?.trim()
     const confirmNewPassword = formData.get('confirmNewPassword')?.trim()
 
-    if (!temporaryCode || !newPassword || !confirmNewPassword) {
-      setAlertMessage('Temporary code and both password fields are required.')
+    const missingFields = [
+      ['temporaryCode', temporaryCode],
+      ['newPassword', newPassword],
+      ['confirmNewPassword', confirmNewPassword],
+    ].filter(([, value]) => !value).map(([field]) => field)
+    if (missingFields.length > 0) {
+      setInvalidFields(missingFields)
+      setAlertMessage('Please complete the highlighted fields.')
       return
     }
 
     if (newPassword !== confirmNewPassword) {
-      setAlertMessage('New password and confirmation password must match.')
+      setInvalidFields(['newPassword', 'confirmNewPassword'])
+      setAlertMessage('Please complete the highlighted fields.')
       return
     }
 
     const resetResult = resetPasswordWithCode(temporaryCode, newPassword)
     if (!resetResult.ok) {
-      setAlertMessage(resetResult.message)
+      setInvalidFields(['temporaryCode'])
+      setAlertMessage('Please complete the highlighted fields.')
       return
     }
 
     setAlertMessage('')
+    setInvalidFields([])
     navigate('/login')
   }
 
@@ -42,7 +52,7 @@ function ResetPasswordForm() {
     <div className="reset-password-container">
       <form className="reset-password-form" noValidate onSubmit={handleResetPassword}>
         {alertMessage && (
-          <Alert onDismiss={() => setAlertMessage('')}>
+          <Alert onDismiss={() => { setAlertMessage(''); setInvalidFields([]) }}>
             {alertMessage}
           </Alert>
         )}
@@ -51,18 +61,21 @@ function ResetPasswordForm() {
           id="temporaryCode"
           type="text"
           required
+          invalid={invalidFields.includes('temporaryCode')}
         />
         <FormField
           label="New Password"
           id="newPassword"
           type="password"
           required
+          invalid={invalidFields.includes('newPassword')}
         />
         <FormField
           label="Confirm New Password"
           id="confirmNewPassword"
           type="password"
           required
+          invalid={invalidFields.includes('confirmNewPassword')}
         />
         <Button type="submit" variant="primary" size="btn-md">Reset Password</Button>
         <Button
