@@ -62,7 +62,7 @@ describe('Home', () => {
     expect(screen.getByRole('tabpanel', { name: /support/i })).toBeInTheDocument()
   })
 
-  test('opens and closes create modal from the Requests panel button', async () => {
+  test('desktop create button navigates to new request page', async () => {
     const user = userEvent.setup()
     const { container } = render(
       <MemoryRouter>
@@ -74,28 +74,7 @@ describe('Home', () => {
     expect(createButton).not.toBeNull()
 
     await user.click(createButton)
-    expect(screen.getByRole('dialog', { name: /create request modal/i })).toBeInTheDocument()
-
-    await user.click(screen.getByRole('button', { name: /close create request modal/i }))
-    expect(screen.queryByRole('dialog', { name: /create request modal/i })).not.toBeInTheDocument()
-  })
-
-  test('modal footer close button closes create modal', async () => {
-    const user = userEvent.setup()
-    const { container } = render(
-      <MemoryRouter>
-        <Home />
-      </MemoryRouter>,
-    )
-
-    const createButton = container.querySelector('.home-create-request')
-    expect(createButton).not.toBeNull()
-
-    await user.click(createButton)
-    expect(screen.getByRole('dialog', { name: /create request modal/i })).toBeInTheDocument()
-
-    await user.click(screen.getByRole('button', { name: /^close$/i }))
-    expect(screen.queryByRole('dialog', { name: /create request modal/i })).not.toBeInTheDocument()
+    expect(mockNavigate).toHaveBeenCalledWith('/requests/new')
   })
 
   test('mobile menu opens and selecting a drawer tab closes it', async () => {

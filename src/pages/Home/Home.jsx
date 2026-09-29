@@ -93,7 +93,6 @@ function Home() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('requests')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [requests, setRequests] = useState([])
   const [currentEmail, setCurrentEmail] = useState('')
 
@@ -112,7 +111,7 @@ function Home() {
   function renderActivePanel() {
     if (activeTab === 'profile') return <ProfilePanel />
     if (activeTab === 'support') return <SupportPanel />
-    return <RequestsPanel requests={requests} onCreateRequest={() => setIsCreateModalOpen(true)} />
+    return <RequestsPanel requests={requests} onCreateRequest={() => navigate('/requests/new')} />
   }
 
   function handleLogout() {
@@ -237,31 +236,6 @@ function Home() {
         </div>
       )}
 
-      {isCreateModalOpen && (
-        <div className="home-modal-backdrop" role="dialog" aria-modal="true" aria-label="Create request modal">
-          <div className="home-modal">
-            <div className="home-modal__header">
-              <h2>Create New Request</h2>
-              <button
-                type="button"
-                className="home-modal__close"
-                aria-label="Close create request modal"
-                onClick={() => setIsCreateModalOpen(false)}
-              >
-                x
-              </button>
-            </div>
-            <div className="home-modal__body">
-              <p>A structured request form will appear here in the next iteration.</p>
-            </div>
-            <div className="home-modal__footer">
-              <Button type="button" variant="secondary" size="btn-md" onClick={() => setIsCreateModalOpen(false)}>
-                Close
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
