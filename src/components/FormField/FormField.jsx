@@ -2,6 +2,7 @@ import './FormField.css'
 
 function FormField({ 
   label,
+  ariaLabel = label,
   id,
   name = id,
   type = "text",
@@ -14,7 +15,7 @@ function FormField({
   invalid = false,
 }) {
   const fieldPlaceholder = `${placeholder || label}${required ? ' *' : ''}`
-  const accessibleLabel = required ? `${label}*` : label
+  const accessibleLabel = required ? `${ariaLabel}*` : ariaLabel
 
   return (
     <div className={`field field--${labelPosition}`}>

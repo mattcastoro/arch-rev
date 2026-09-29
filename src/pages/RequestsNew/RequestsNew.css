@@ -40,6 +40,28 @@
   color: var(--gray-700);
 }
 
+.requests-new-improvements {
+  display: flex;
+  flex-direction: column;
+}
+
+.requests-new-improvement {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-bottom: 1rem;
+}
+
+.requests-new-improvement + .requests-new-improvement {
+  padding-top: 1rem;
+  border-top: 1px solid var(--gray-300);
+}
+
+.requests-new-add-improvement {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .requests-new-actions {
   position: sticky;
   bottom: 0;

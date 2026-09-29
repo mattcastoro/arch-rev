@@ -106,7 +106,25 @@ describe('localData', () => {
     const ownerRequests = getRequestsByOwner('PERSON@example.com')
     expect(ownerRequests).toHaveLength(1)
     expect(ownerRequests[0].status).toBe('Submitted')
+    expect(ownerRequests[0].improvements).toEqual([
+      expect.objectContaining({ improvementType: 'Paint', description: 'Paint house' }),
+    ])
     expect(getRequests()).toHaveLength(2)
+  })
+
+  test('request helpers save multiple improvements and expose the first for compatibility', () => {
+    const request = createRequest({
+      ownerEmail: 'person@example.com',
+      improvements: [
+        { improvementType: 'Painting', description: 'Paint house', files: [] },
+        { improvementType: 'Fencing', description: 'Replace fence', files: [] },
+      ],
+    })
+
+    expect(request.improvements).toHaveLength(2)
+    expect(request.improvementType).toBe('Painting')
+    expect(request.description).toBe('Paint house')
+    expect(request.files).toEqual([])
   })
 
   test('password reset code flow validates and updates password', () => {

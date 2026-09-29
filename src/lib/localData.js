@@ -105,12 +105,19 @@ export function getRequestsByOwner(email) {
 
 export function createRequest(requestInput) {
   const requests = getRequests()
-  const request = {
-    id: `req_${Date.now()}`,
-    ownerEmail: requestInput.ownerEmail.toLowerCase(),
+  const improvements = requestInput.improvements ?? [{
     improvementType: requestInput.improvementType,
     description: requestInput.description,
     files: requestInput.files,
+  }]
+  const firstImprovement = improvements[0]
+  const request = {
+    id: `req_${Date.now()}`,
+    ownerEmail: requestInput.ownerEmail.toLowerCase(),
+    improvements,
+    improvementType: firstImprovement.improvementType,
+    description: firstImprovement.description,
+    files: firstImprovement.files,
     status: 'Submitted',
     createdAt: new Date().toISOString(),
   }

@@ -33,10 +33,14 @@ function RequestsPanel({ requests, onCreateRequest }) {
         <div className="home-grid">
           {requests.map((request) => (
             <article className="home-card" key={request.id}>
-              <h3>{request.improvementType}</h3>
-              <p>{request.description}</p>
+              {(request.improvements ?? [request]).map((improvement, index) => (
+                <div className="home-card__improvement" key={`${request.id}-${index}`}>
+                  <h3>{improvement.improvementType}</h3>
+                  <p>{improvement.description}</p>
+                  <p className="home-card__meta">Files: {improvement.files.length}</p>
+                </div>
+              ))}
               <p className="home-card__meta">Status: {request.status}</p>
-              <p className="home-card__meta">Files: {request.files.length}</p>
             </article>
           ))}
         </div>

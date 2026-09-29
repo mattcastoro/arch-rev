@@ -186,6 +186,12 @@
   font-size: var(--font-size-small);
 }
 
+.home-card__improvement + .home-card__improvement {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--gray-200);
+}
+
 .home-mobile-overlay {
   position: fixed;
   inset: 0;
