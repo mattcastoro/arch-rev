@@ -189,7 +189,10 @@ describe('Home', () => {
       </MemoryRouter>,
     )
 
-    expect(container.querySelector('.home-panel__header .home-create-request')).not.toBeNull()
+    const desktopCreateButton = container.querySelector('.home-panel__header .home-create-request')
+    expect(desktopCreateButton).not.toBeNull()
+    expect(desktopCreateButton).toHaveTextContent(/^Create New Request$/)
+    expect(desktopCreateButton.querySelector('.home-create-request__label')).toBeNull()
     expect(container.querySelector('.home-mobile-create')).not.toBeNull()
   })
 

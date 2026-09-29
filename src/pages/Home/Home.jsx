@@ -21,8 +21,7 @@ function RequestsPanel({ requests, onCreateRequest }) {
           aria-label="Create New Request"
           onClick={onCreateRequest}
         >
-          <span aria-hidden="true">+</span>
-          <span className="home-create-request__label" aria-hidden="true">Create New Request</span>
+          Create New Request
         </button>
       </div>
       {requests.length === 0 ? (

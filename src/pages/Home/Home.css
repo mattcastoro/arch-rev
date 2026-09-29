@@ -133,7 +133,6 @@
   display: none;
   align-items: center;
   justify-content: center;
-  gap: 0;
   border: 1px solid var(--primary-500);
   border-radius: 0.375rem;
   background: var(--primary-500);
@@ -144,7 +143,7 @@
   line-height: 1.25;
   cursor: pointer;
   white-space: nowrap;
-  transition: background-color 0.25s ease, border-color 0.25s ease, gap 0.25s ease;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
 .home-create-request:hover {
@@ -156,24 +155,6 @@
 .home-create-request:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
-}
-
-.home-create-request__label {
-  max-width: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: max-width 0.25s ease, opacity 0.2s ease;
-}
-
-.home-create-request:hover .home-create-request__label,
-.home-create-request:focus-visible .home-create-request__label {
-  max-width: 12rem;
-  opacity: 1;
-}
-
-.home-create-request:hover,
-.home-create-request:focus-visible {
-  gap: 0.5rem;
 }
 
 .home-grid {
