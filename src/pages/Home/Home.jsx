@@ -224,17 +224,19 @@ function Home() {
         </>
       )}
 
-      <div className="home-mobile-create">
-        <Button
-          type="button"
-          variant="primary"
-          size="btn-md"
-          fullWidth
-          onClick={() => navigate('/requests/new')}
-        >
-          Create New Request
-        </Button>
-      </div>
+      {activeTab === 'requests' && (
+        <div className="home-mobile-create">
+          <Button
+            type="button"
+            variant="primary"
+            size="btn-md"
+            fullWidth
+            onClick={() => navigate('/requests/new')}
+          >
+            Create New Request
+          </Button>
+        </div>
+      )}
 
       {isCreateModalOpen && (
         <div className="home-modal-backdrop" role="dialog" aria-modal="true" aria-label="Create request modal">

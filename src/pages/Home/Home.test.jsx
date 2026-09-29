@@ -205,6 +205,26 @@ describe('Home', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/requests/new')
   })
 
+  test('only shows the mobile create button on the Requests tab', async () => {
+    const user = userEvent.setup()
+    const { container } = render(
+      <MemoryRouter>
+        <Home />
+      </MemoryRouter>,
+    )
+
+    expect(container.querySelector('.home-mobile-create')).not.toBeNull()
+
+    await user.click(screen.getByRole('tab', { name: /profile section/i }))
+    expect(container.querySelector('.home-mobile-create')).toBeNull()
+
+    await user.click(screen.getByRole('tab', { name: /support section/i }))
+    expect(container.querySelector('.home-mobile-create')).toBeNull()
+
+    await user.click(screen.getByRole('tab', { name: /requests section/i }))
+    expect(container.querySelector('.home-mobile-create')).not.toBeNull()
+  })
+
   test('requests panel shows persisted user requests', () => {
     localStorage.setItem(storageKeys.REQUESTS_KEY, JSON.stringify([
       {
