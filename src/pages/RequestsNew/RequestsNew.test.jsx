@@ -31,7 +31,7 @@ describe('RequestsNew', () => {
 
     expect(screen.getByRole('heading', { name: /create new request/i })).toBeInTheDocument()
     expect(screen.getByLabelText('Improvement Type*')).toBeInTheDocument()
-    expect(screen.getByLabelText('Description*')).toBeInTheDocument()
+    expect(screen.getByLabelText('Description*')).toHaveAttribute('placeholder', 'Describe Improvement *')
     expect(screen.getByLabelText('Supporting Documentation')).toBeInTheDocument()
   })
 
@@ -72,7 +72,7 @@ describe('RequestsNew', () => {
       </MemoryRouter>,
     )
 
-    await user.selectOptions(screen.getByLabelText('Improvement Type*'), 'Paint')
+    await user.selectOptions(screen.getByLabelText('Improvement Type*'), 'Painting')
     await user.type(screen.getByLabelText('Description*'), 'Test improvement request')
 
     const file = new File(['test'], 'quote.pdf', { type: 'application/pdf' })
@@ -97,7 +97,7 @@ describe('RequestsNew', () => {
       </MemoryRouter>,
     )
 
-    await user.selectOptions(screen.getByLabelText('Improvement Type*'), 'Paint')
+    await user.selectOptions(screen.getByLabelText('Improvement Type*'), 'Painting')
     await user.type(screen.getByLabelText('Description*'), 'No session request')
     await user.click(screen.getByRole('button', { name: /submit request/i }))
 

@@ -8,9 +8,18 @@ import { createRequest, getCurrentUserEmail } from '../../lib/localData'
 import './RequestsNew.css'
 
 const improvementOptions = [
-  { label: 'Paint', value: 'Paint' },
-  { label: 'Fence', value: 'Fence' },
+  { label: 'Painting', value: 'Painting' },
+  { label: 'Fencing', value: 'Fencing' },
   { label: 'Landscaping', value: 'Landscaping' },
+  { label: 'Roofing', value: 'Roofing' },
+  { label: 'Windows', value: 'Windows' },
+  { label: 'Doors', value: 'Doors' },
+  { label: 'Decking', value: 'Decking' },
+  { label: 'Patio', value: 'Patio' },
+  { label: 'Mailbox', value: 'Mailbox' },
+  { label: 'HVAC', value: 'HVAC' },
+  { label: 'Lighting', value: 'Lighting' },
+  { label: 'Other', value: 'Other' },
 ]
 
 function RequestsNew() {
@@ -86,6 +95,7 @@ function RequestsNew() {
         <FormField
           as="textarea"
           label="Description"
+          placeholder="Describe Improvement"
           id="description"
           rows={6}
           required
