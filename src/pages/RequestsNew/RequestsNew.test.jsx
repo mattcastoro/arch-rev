@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import RequestsNew from './RequestsNew'
@@ -99,15 +99,15 @@ describe('RequestsNew', () => {
       </MemoryRouter>,
     )
 
-    await user.click(screen.getByRole('button', { name: /add improvement/i }))
-
-    expect(screen.getAllByRole('region', { name: /improvement \d/i })).toHaveLength(2)
     await user.selectOptions(screen.getByLabelText('Improvement Type 1*'), 'Painting')
     await user.type(screen.getByLabelText('Description 1*'), 'Paint the exterior')
     await user.upload(
       screen.getByLabelText('Supporting Documentation 1'),
       new File(['paint'], 'paint.pdf', { type: 'application/pdf' }),
     )
+    await user.click(screen.getByRole('button', { name: /add improvement/i }))
+
+    expect(screen.getAllByRole('region', { name: /improvement \d/i })).toHaveLength(2)
     await user.selectOptions(screen.getByLabelText('Improvement Type 2*'), 'Fencing')
     await user.type(screen.getByLabelText('Description 2*'), 'Replace the fence')
     await user.upload(
@@ -149,6 +149,66 @@ describe('RequestsNew', () => {
     expect(screen.getByLabelText('Improvement Type 2*')).toHaveAttribute('aria-invalid', 'true')
     expect(screen.getByLabelText('Description 2*')).toHaveAttribute('aria-invalid', 'true')
     expect(localStorage.getItem(storageKeys.REQUESTS_KEY)).toBeNull()
+  })
+
+  test('does not add an improvement until required fields are complete', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter>
+        <RequestsNew />
+      </MemoryRouter>,
+    )
+
+    await user.click(screen.getByRole('button', { name: /add improvement/i }))
+
+    expect(screen.getAllByRole('region', { name: /improvement \d/i })).toHaveLength(1)
+    expect(screen.getByText('Please complete the highlighted fields.')).toBeInTheDocument()
+    expect(screen.getByLabelText('Improvement Type 1*')).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getByLabelText('Description 1*')).toHaveAttribute('aria-invalid', 'true')
+  })
+
+  test('removes an empty added improvement without confirmation', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter>
+        <RequestsNew />
+      </MemoryRouter>,
+    )
+
+    await user.selectOptions(screen.getByLabelText('Improvement Type 1*'), 'Painting')
+    await user.type(screen.getByLabelText('Description 1*'), 'Paint the exterior')
+    await user.click(screen.getByRole('button', { name: /add improvement/i }))
+    await user.click(screen.getByRole('button', { name: /remove improvement 2/i }))
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getAllByRole('region', { name: /improvement \d/i })).toHaveLength(1)
+  })
+
+  test('confirms before removing an improvement containing data', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter>
+        <RequestsNew />
+      </MemoryRouter>,
+    )
+
+    await user.selectOptions(screen.getByLabelText('Improvement Type 1*'), 'Painting')
+    await user.type(screen.getByLabelText('Description 1*'), 'Paint the exterior')
+    await user.click(screen.getByRole('button', { name: /add improvement/i }))
+    await user.type(screen.getByLabelText('Description 2*'), 'Some entered information')
+    await user.click(screen.getByRole('button', { name: /remove improvement 2/i }))
+
+    const dialog = screen.getByRole('dialog', { name: /delete improvement/i })
+    expect(dialog).toBeInTheDocument()
+    await user.click(within(dialog).getByRole('button', { name: /cancel/i }))
+    expect(screen.getAllByRole('region', { name: /improvement \d/i })).toHaveLength(2)
+
+    await user.click(screen.getByRole('button', { name: /remove improvement 2/i }))
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /delete improvement/i }))
+    expect(screen.getAllByRole('region', { name: /improvement \d/i })).toHaveLength(1)
   })
 
   test('redirects to login if session is missing', async () => {
