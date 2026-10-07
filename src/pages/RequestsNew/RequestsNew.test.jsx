@@ -49,6 +49,31 @@ describe('RequestsNew', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/home')
   })
 
+  test('confirms cancellation when the request contains entered data', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter>
+        <RequestsNew />
+      </MemoryRouter>,
+    )
+
+    await user.type(screen.getByLabelText('Description 1*'), 'Work in progress')
+    await user.click(screen.getByRole('button', { name: /^cancel$/i }))
+
+    const dialog = screen.getByRole('dialog', { name: /cancel new request/i })
+    expect(within(dialog).getByText(/entered information will not be saved/i)).toBeInTheDocument()
+    expect(mockNavigate).not.toHaveBeenCalled()
+
+    await user.click(within(dialog).getByRole('button', { name: /continue editing/i }))
+    expect(screen.queryByRole('dialog', { name: /cancel new request/i })).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Description 1*')).toHaveValue('Work in progress')
+
+    await user.click(screen.getByRole('button', { name: /^cancel$/i }))
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /discard request/i }))
+    expect(mockNavigate).toHaveBeenCalledWith('/home')
+  })
+
   test('validates required fields', async () => {
     const user = userEvent.setup()
 

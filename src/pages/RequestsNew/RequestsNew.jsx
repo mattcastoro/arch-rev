@@ -28,6 +28,7 @@ function RequestsNew() {
   const [invalidFields, setInvalidFields] = useState([])
   const [improvements, setImprovements] = useState([{ id: 0 }])
   const [improvementToRemove, setImprovementToRemove] = useState(null)
+  const [showCancelConfirmation, setShowCancelConfirmation] = useState(false)
   const nextImprovementId = useRef(1)
 
   function getImprovementValues(form, id) {
@@ -81,6 +82,21 @@ function RequestsNew() {
     }
 
     removeImprovement(id)
+  }
+
+  function handleCancelRequest(event) {
+    const form = event.currentTarget.form
+    const hasEnteredData = improvements.some(({ id }) => {
+      const improvement = getImprovementValues(form, id)
+      return improvement.improvementType || improvement.description || improvement.files.length
+    })
+
+    if (hasEnteredData || improvements.length > 1) {
+      setShowCancelConfirmation(true)
+      return
+    }
+
+    navigate('/home')
   }
 
   function handleSubmit(event) {
@@ -195,7 +211,7 @@ function RequestsNew() {
         </div>
 
         <div className="requests-new-actions">
-          <Button type="button" variant="secondary" size="btn-md" onClick={() => navigate('/home')}>
+          <Button type="button" variant="secondary" size="btn-md" onClick={handleCancelRequest}>
             Cancel
           </Button>
           <Button type="submit" variant="primary" size="btn-md">
@@ -215,6 +231,23 @@ function RequestsNew() {
               </Button>
               <Button type="button" variant="primary" size="btn-md" onClick={() => removeImprovement(improvementToRemove)}>
                 Delete Improvement
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCancelConfirmation && (
+        <div className="requests-new-modal-backdrop" role="presentation">
+          <div className="requests-new-modal" role="dialog" aria-modal="true" aria-labelledby="cancel-request-title">
+            <h2 id="cancel-request-title">Cancel new request?</h2>
+            <p>Your entered information will not be saved.</p>
+            <div className="requests-new-modal-actions">
+              <Button type="button" variant="secondary" size="btn-md" onClick={() => setShowCancelConfirmation(false)}>
+                Continue Editing
+              </Button>
+              <Button type="button" variant="primary" size="btn-md" onClick={() => navigate('/home')}>
+                Discard Request
               </Button>
             </div>
           </div>
