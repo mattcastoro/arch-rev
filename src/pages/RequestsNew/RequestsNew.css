@@ -204,6 +204,34 @@
   min-width: 0;
 }
 
+.requests-new-attachment-error {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0.75rem 0 0;
+  color: var(--error);
+  font-size: 0.875rem;
+}
+
+.requests-new-attachment-error button {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: currentColor;
+  font-size: 1.125rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.requests-new-attachment-error button:focus-visible {
+  outline: 2px solid var(--error);
+  outline-offset: 2px;
+}
+
 .requests-new-upload-progress-track {
   width: 6rem;
   height: 0.25rem;

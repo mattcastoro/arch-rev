@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import RequestsNew from './RequestsNew'
@@ -221,6 +221,54 @@ describe('RequestsNew', () => {
     expect(screen.getByTitle('Preview of plans.pdf')).toHaveAttribute('src', 'blob:test-preview')
   })
 
+  test('rejects unsupported, empty, oversized, and excess files with inline errors', async () => {
+    render(
+      <MemoryRouter>
+        <RequestsNew />
+      </MemoryRouter>,
+    )
+
+    const input = screen.getByLabelText('Supporting Documentation 1')
+    fireEvent.change(input, { target: { files: [new File(['text'], 'notes.txt', { type: 'text/plain' })] } })
+    expect(screen.getByRole('alert')).toHaveTextContent('Upload a PDF, JPG, or PNG')
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Dismiss attachment error 1' }))
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+
+    fireEvent.change(input, { target: { files: [new File([], 'empty.pdf', { type: 'application/pdf' })] } })
+    expect(screen.getByRole('alert')).toHaveTextContent('empty or unreadable')
+
+    fireEvent.change(input, { target: { files: [new File([new Uint8Array(10_000_001)], 'large.pdf', { type: 'application/pdf' })] } })
+    expect(screen.getByRole('alert')).toHaveTextContent('maximum file size is 10 MB')
+
+    const files = Array.from({ length: 11 }, (_, index) => (
+      new File(['pdf'], `plans-${index}.pdf`, { type: 'application/pdf' })
+    ))
+    fireEvent.change(input, { target: { files } })
+    expect(screen.getByRole('alert')).toHaveTextContent('up to 10 files')
+    expect(screen.getAllByRole('button', { name: /^plans-\d+\.pdf$/i })).toHaveLength(10)
+  })
+
+  test('asks before replacing a duplicate file', async () => {
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter>
+        <RequestsNew />
+      </MemoryRouter>,
+    )
+
+    const input = screen.getByLabelText('Supporting Documentation 1')
+    await user.upload(input, new File(['old'], 'plans.pdf', { type: 'application/pdf' }))
+    await user.upload(input, new File(['new file'], 'plans.pdf', { type: 'application/pdf' }))
+
+    const dialog = screen.getByRole('dialog', { name: /replace existing file/i })
+    await user.click(within(dialog).getByRole('button', { name: /cancel/i }))
+    expect(screen.queryByRole('dialog', { name: /replace existing file/i })).not.toBeInTheDocument()
+
+    await user.upload(input, new File(['new file'], 'plans.pdf', { type: 'application/pdf' }))
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /replace file/i }))
+    expect(screen.getAllByRole('button', { name: 'plans.pdf' })).toHaveLength(1)
+  })
+
   test('offers device, website link, and camera attachment options', async () => {
     const user = userEvent.setup()
 
@@ -273,11 +321,17 @@ describe('RequestsNew', () => {
     await user.type(linkInput, 'https://example.com/plans')
     await user.click(screen.getByRole('button', { name: 'Add Link' }))
     expect(screen.getByRole('link', { name: 'https://example.com/plans' })).toBeInTheDocument()
+    await user.click(trigger)
+    await user.click(screen.getByRole('menuitem', { name: /add website link/i }))
+    await user.type(screen.getByLabelText('Website Link 1'), 'https://example.com/plans')
+    await user.click(screen.getByRole('button', { name: 'Add Link' }))
+    expect(screen.getByText('This website link has already been added.')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Remove https://example.com/plans' }))
     expect(screen.queryByRole('link', { name: 'https://example.com/plans' })).not.toBeInTheDocument()
 
     await user.click(trigger)
     await user.click(screen.getByRole('menuitem', { name: /add website link/i }))
+    await user.clear(screen.getByLabelText('Website Link 1'))
     await user.type(screen.getByLabelText('Website Link 1'), 'https://example.com/final')
     await user.click(screen.getByRole('button', { name: 'Add Link' }))
     await user.click(screen.getByRole('button', { name: /submit request/i }))

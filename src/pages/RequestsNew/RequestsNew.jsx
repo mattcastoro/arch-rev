@@ -30,10 +30,20 @@ const uploadDateFormatter = new Intl.DateTimeFormat(undefined, {
 const fileSizeFormatter = new Intl.NumberFormat(undefined, {
   maximumFractionDigits: 2,
 })
+const allowedFileTypes = ['application/pdf', 'image/jpeg', 'image/png']
+const maximumFileSize = 10_000_000
+const maximumFiles = 10
 
 function formatFileSize(size) {
   if (size < 1_000_000) return `${fileSizeFormatter.format(size / 1_000)} KB`
   return `${fileSizeFormatter.format(size / 1_000_000)} MB`
+}
+
+function getFileValidationError(file) {
+  if (!allowedFileTypes.includes(file.type)) return `“${file.name}” wasn’t added. Upload a PDF, JPG, or PNG.`
+  if (file.size === 0) return `“${file.name}” appears to be empty or unreadable. Upload the file again.`
+  if (file.size > maximumFileSize) return `“${file.name}” is ${formatFileSize(file.size)}. The maximum file size is 10 MB.`
+  return ''
 }
 
 function RequestsNew() {
@@ -45,6 +55,8 @@ function RequestsNew() {
   const [linkEditorId, setLinkEditorId] = useState(null)
   const [linkDrafts, setLinkDrafts] = useState({})
   const [filePreview, setFilePreview] = useState(null)
+  const [attachmentErrors, setAttachmentErrors] = useState({})
+  const [duplicateFile, setDuplicateFile] = useState(null)
   const [improvementToRemove, setImprovementToRemove] = useState(null)
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false)
   const nextImprovementId = useRef(1)
@@ -122,6 +134,12 @@ function RequestsNew() {
       return
     }
 
+    const improvement = improvements.find((item) => item.id === id)
+    if (improvement.links.some((link) => link.url.toLowerCase() === url.toLowerCase())) {
+      setAttachmentErrors((current) => ({ ...current, [id]: 'This website link has already been added.' }))
+      return
+    }
+
     setImprovements((current) => current.map((improvement) => (
       improvement.id === id
         ? { ...improvement, links: [...improvement.links, { url, addedAt: new Date() }] }
@@ -130,6 +148,7 @@ function RequestsNew() {
     setLinkDrafts((current) => ({ ...current, [id]: '' }))
     setLinkEditorId(null)
     setAlertMessage('')
+    setAttachmentErrors((current) => ({ ...current, [id]: '' }))
   }
 
   function removeLink(id, linkIndex) {
@@ -150,18 +169,39 @@ function RequestsNew() {
 
   function handleFilesSelected(event, id) {
     const uploadedAt = new Date()
-    const selectedFiles = Array.from(event.currentTarget.files, (file) => ({
-      file,
-      uploadedAt,
-      uploading: true,
-    }))
+    const improvement = improvements.find((item) => item.id === id)
+    const selectedFiles = Array.from(event.currentTarget.files)
+    const validFiles = selectedFiles.filter((file) => {
+      const error = getFileValidationError(file)
+      if (error) setAttachmentErrors((current) => ({ ...current, [id]: error }))
+      return !error
+    })
+    const availableSlots = maximumFiles - improvement.files.length
+    const filesWithinLimit = validFiles.slice(0, availableSlots)
+    if (validFiles.length > availableSlots) {
+      setAttachmentErrors((current) => ({ ...current, [id]: 'You can attach up to 10 files to this improvement.' }))
+    }
+    const newFiles = filesWithinLimit.flatMap((file) => {
+      const existingIndex = improvement.files.findIndex(
+        (entry) => entry.file.name.toLowerCase() === file.name.toLowerCase(),
+      )
+      if (existingIndex >= 0) {
+        setDuplicateFile({ id, file, uploadedAt, existingIndex })
+        return []
+      }
+      return [{ file, uploadedAt, uploading: true }]
+    })
     setImprovements((current) => current.map((improvement) => (
       improvement.id === id
-        ? { ...improvement, files: [...improvement.files, ...selectedFiles] }
+        ? { ...improvement, files: [...improvement.files, ...newFiles] }
         : improvement
     )))
     event.currentTarget.value = ''
 
+    if (!newFiles.length) return
+    if (validFiles.length === selectedFiles.length && validFiles.length <= availableSlots) {
+      setAttachmentErrors((current) => ({ ...current, [id]: '' }))
+    }
     clearTimeout(uploadTimers.current.get(id))
     const timer = setTimeout(() => {
       setImprovements((current) => {
@@ -177,6 +217,21 @@ function RequestsNew() {
       uploadTimers.current.delete(id)
     }, 700)
     uploadTimers.current.set(id, timer)
+  }
+
+  function replaceDuplicateFile() {
+    const { id, file, uploadedAt, existingIndex } = duplicateFile
+    setImprovements((current) => {
+      const improvementIndex = current.findIndex((improvement) => improvement.id === id)
+      const nextImprovements = [...current]
+      const improvement = nextImprovements[improvementIndex]
+      const files = [...improvement.files]
+      files[existingIndex] = { file, uploadedAt, uploading: false }
+      nextImprovements[improvementIndex] = { ...improvement, files }
+      return nextImprovements
+    })
+    setDuplicateFile(null)
+    setAttachmentErrors((current) => ({ ...current, [id]: '' }))
   }
 
   function removeFile(id, fileIndex) {
@@ -396,6 +451,18 @@ function RequestsNew() {
                     <button type="button" onClick={() => addLink(id)}>Add Link</button>
                   </div>
                 )}
+                {attachmentErrors[id] && (
+                  <div className="requests-new-attachment-error" role="alert">
+                    <span>{attachmentErrors[id]}</span>
+                    <button
+                      type="button"
+                      aria-label={`Dismiss attachment error ${index + 1}`}
+                      onClick={() => setAttachmentErrors((current) => ({ ...current, [id]: '' }))}
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
                 {files.length > 0 && (
                   <ul className="requests-new-file-list" aria-label={`Selected files ${index + 1}`}>
                     {files.map(({ file, uploadedAt, uploading }, fileIndex) => (
@@ -536,6 +603,23 @@ function RequestsNew() {
             <footer className="requests-new-preview-footer">
               <a href={filePreview.url} target="_blank" rel="noreferrer">Open in new tab</a>
             </footer>
+          </div>
+        </div>
+      )}
+
+      {duplicateFile && (
+        <div className="requests-new-modal-backdrop" role="presentation">
+          <div className="requests-new-modal" role="dialog" aria-modal="true" aria-labelledby="duplicate-file-title">
+            <h2 id="duplicate-file-title">Replace existing file?</h2>
+            <p>A file named “{duplicateFile.file.name}” has already been added. Would you like to replace it?</p>
+            <div className="requests-new-modal-actions">
+              <Button type="button" variant="secondary" size="btn-md" onClick={() => setDuplicateFile(null)}>
+                Cancel
+              </Button>
+              <Button type="button" variant="primary" size="btn-md" onClick={replaceDuplicateFile}>
+                Replace File
+              </Button>
+            </div>
           </div>
         </div>
       )}
