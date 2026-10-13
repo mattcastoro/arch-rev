@@ -275,6 +275,25 @@
   white-space: nowrap;
 }
 
+.requests-new-file-preview {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.requests-new-file-preview:hover,
+.requests-new-file-preview:focus-visible {
+  color: var(--primary-700);
+  text-decoration: underline;
+}
+
+.requests-new-file-preview:focus-visible {
+  outline: 2px solid var(--primary-500);
+  outline-offset: 2px;
+}
+
 .requests-new-file-details {
   flex: none;
   color: var(--gray-600);
@@ -385,4 +404,88 @@ textarea {
   justify-content: flex-end;
   gap: 0.75rem;
   margin-top: 1.5rem;
+}
+
+.requests-new-preview-backdrop {
+  padding: 0;
+}
+
+.requests-new-preview-modal {
+  width: min(90vw, 64rem);
+  height: min(90vh, 48rem);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: white;
+  box-shadow: 0 1.25rem 3rem rgba(17, 24, 39, 0.3);
+}
+
+.requests-new-preview-header,
+.requests-new-preview-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+}
+
+.requests-new-preview-header {
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.requests-new-preview-header h2 {
+  overflow: hidden;
+  font-size: 1rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.requests-new-preview-header button {
+  width: 2rem;
+  height: 2rem;
+  flex: none;
+  border: 0;
+  background: transparent;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.requests-new-preview-content {
+  min-height: 0;
+  flex: 1;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  background: var(--gray-100);
+}
+
+.requests-new-preview-content img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.requests-new-preview-content iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.requests-new-preview-footer {
+  justify-content: flex-end;
+  border-top: 1px solid var(--gray-200);
+}
+
+.requests-new-preview-footer a {
+  color: var(--primary-700);
+  font-weight: 500;
+}
+
+@media (max-width: 767px) {
+  .requests-new-preview-modal {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
 }

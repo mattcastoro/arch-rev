@@ -14,6 +14,8 @@ jest.mock('react-router-dom', () => ({
 describe('RequestsNew', () => {
   beforeEach(() => {
     mockNavigate.mockReset()
+    URL.createObjectURL = jest.fn(() => 'blob:test-preview')
+    URL.revokeObjectURL = jest.fn()
     localStorage.clear()
     localStorage.setItem(storageKeys.SESSION_KEY, JSON.stringify({
       email: 'resident@example.com',
@@ -188,6 +190,35 @@ describe('RequestsNew', () => {
     expect(request.improvements[0].files).toEqual([
       expect.objectContaining({ name: 'second.png' }),
     ])
+  })
+
+  test('previews uploaded images and PDFs', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter>
+        <RequestsNew />
+      </MemoryRouter>,
+    )
+
+    const fileInput = screen.getByLabelText('Supporting Documentation 1')
+    await user.upload(fileInput, [
+      new File(['image'], 'photo.png', { type: 'image/png' }),
+      new File(['pdf'], 'plans.pdf', { type: 'application/pdf' }),
+    ])
+
+    await user.click(screen.getByRole('button', { name: 'photo.png' }))
+    expect(screen.getByRole('dialog', { name: 'photo.png' })).toBeInTheDocument()
+    expect(screen.getByAltText('Preview of photo.png')).toHaveAttribute('src', 'blob:test-preview')
+    expect(screen.getByRole('link', { name: /open in new tab/i })).toHaveAttribute(
+      'href',
+      'blob:test-preview',
+    )
+    await user.click(screen.getByRole('button', { name: /close file preview/i }))
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:test-preview')
+
+    await user.click(screen.getByRole('button', { name: 'plans.pdf' }))
+    expect(screen.getByTitle('Preview of plans.pdf')).toHaveAttribute('src', 'blob:test-preview')
   })
 
   test('offers device, website link, and camera attachment options', async () => {

@@ -44,14 +44,30 @@ function RequestsNew() {
   const [attachmentMenuId, setAttachmentMenuId] = useState(null)
   const [linkEditorId, setLinkEditorId] = useState(null)
   const [linkDrafts, setLinkDrafts] = useState({})
+  const [filePreview, setFilePreview] = useState(null)
   const [improvementToRemove, setImprovementToRemove] = useState(null)
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false)
   const nextImprovementId = useRef(1)
   const uploadTimers = useRef(new Map())
+  const previewUrl = useRef(null)
 
   useEffect(() => () => {
     uploadTimers.current.forEach((timer) => clearTimeout(timer))
+    if (previewUrl.current) URL.revokeObjectURL(previewUrl.current)
   }, [])
+
+  function openFilePreview(file) {
+    if (previewUrl.current) URL.revokeObjectURL(previewUrl.current)
+    const url = URL.createObjectURL(file)
+    previewUrl.current = url
+    setFilePreview({ file, url })
+  }
+
+  function closeFilePreview() {
+    URL.revokeObjectURL(previewUrl.current)
+    previewUrl.current = null
+    setFilePreview(null)
+  }
 
   function getImprovementValues(form, improvement) {
     const formData = new FormData(form)
@@ -388,7 +404,13 @@ function RequestsNew() {
                         key={`${file.name}-${file.size}-${fileIndex}`}
                       >
                         <span className="requests-new-file-information">
-                          <span className="requests-new-file-name">{file.name}</span>
+                          <button
+                            className="requests-new-file-name requests-new-file-preview"
+                            type="button"
+                            onClick={() => openFilePreview(file)}
+                          >
+                            {file.name}
+                          </button>
                           {uploading ? (
                             <span className="requests-new-file-uploading" aria-live="polite">
                               <span className="requests-new-file-uploading-label">Uploading…</span>
@@ -488,6 +510,32 @@ function RequestsNew() {
                 Discard Request
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {filePreview && (
+        <div className="requests-new-modal-backdrop requests-new-preview-backdrop" role="presentation">
+          <div
+            className="requests-new-preview-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="file-preview-title"
+          >
+            <header className="requests-new-preview-header">
+              <h2 id="file-preview-title">{filePreview.file.name}</h2>
+              <button type="button" aria-label="Close file preview" onClick={closeFilePreview}>×</button>
+            </header>
+            <div className="requests-new-preview-content">
+              {filePreview.file.type.startsWith('image/') ? (
+                <img src={filePreview.url} alt={`Preview of ${filePreview.file.name}`} />
+              ) : (
+                <iframe src={filePreview.url} title={`Preview of ${filePreview.file.name}`} />
+              )}
+            </div>
+            <footer className="requests-new-preview-footer">
+              <a href={filePreview.url} target="_blank" rel="noreferrer">Open in new tab</a>
+            </footer>
           </div>
         </div>
       )}
