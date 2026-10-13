@@ -92,6 +92,12 @@
   justify-content: flex-end;
 }
 
+.requests-new-file-list {
+  margin: 0.5rem 0 0;
+  padding-left: 1.5rem;
+  color: var(--gray-700);
+}
+
 .requests-new-actions {
   position: sticky;
   bottom: 0;

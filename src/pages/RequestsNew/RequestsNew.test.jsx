@@ -115,6 +115,35 @@ describe('RequestsNew', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/home')
   })
 
+  test('appends files selected in subsequent uploads', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter>
+        <RequestsNew />
+      </MemoryRouter>,
+    )
+
+    await user.selectOptions(screen.getByLabelText('Improvement Type 1*'), 'Painting')
+    await user.type(screen.getByLabelText('Description 1*'), 'Paint the exterior')
+
+    const fileInput = screen.getByLabelText('Supporting Documentation 1')
+    await user.upload(fileInput, new File(['first'], 'first.pdf', { type: 'application/pdf' }))
+    await user.upload(fileInput, new File(['second'], 'second.png', { type: 'image/png' }))
+
+    const selectedFiles = within(screen.getByRole('list', { name: 'Selected files 1' }))
+      .getAllByRole('listitem')
+    expect(selectedFiles.map((item) => item.textContent)).toEqual(['first.pdf', 'second.png'])
+
+    await user.click(screen.getByRole('button', { name: /submit request/i }))
+
+    const [request] = JSON.parse(localStorage.getItem(storageKeys.REQUESTS_KEY))
+    expect(request.improvements[0].files).toEqual([
+      expect.objectContaining({ name: 'first.pdf' }),
+      expect.objectContaining({ name: 'second.png' }),
+    ])
+  })
+
   test('adds and submits multiple improvements with separate files', async () => {
     const user = userEvent.setup()
 

@@ -26,28 +26,30 @@ function RequestsNew() {
   const navigate = useNavigate()
   const [alertMessage, setAlertMessage] = useState('')
   const [invalidFields, setInvalidFields] = useState([])
-  const [improvements, setImprovements] = useState([{ id: 0 }])
+  const [improvements, setImprovements] = useState([{ id: 0, files: [] }])
   const [improvementToRemove, setImprovementToRemove] = useState(null)
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false)
   const nextImprovementId = useRef(1)
 
-  function getImprovementValues(form, id) {
+  function getImprovementValues(form, improvement) {
     const formData = new FormData(form)
+    const { id, files } = improvement
 
     return {
       improvementType: formData.get(`improvementType-${id}`)?.toString() || '',
       description: formData.get(`description-${id}`)?.toString().trim() || '',
-      files: Array.from(form.elements[`supportingDocs-${id}`]?.files || []),
+      files,
     }
   }
 
   function validateImprovements(form) {
-    const nextInvalidFields = improvements.flatMap(({ id }) => {
-      const improvement = getImprovementValues(form, id)
+    const nextInvalidFields = improvements.flatMap((improvement) => {
+      const { id } = improvement
+      const improvementValues = getImprovementValues(form, improvement)
 
       return [
-        ...(!improvement.improvementType ? [`improvementType-${id}`] : []),
-        ...(!improvement.description ? [`description-${id}`] : []),
+        ...(!improvementValues.improvementType ? [`improvementType-${id}`] : []),
+        ...(!improvementValues.description ? [`description-${id}`] : []),
       ]
     })
 
@@ -61,7 +63,17 @@ function RequestsNew() {
 
     const id = nextImprovementId.current
     nextImprovementId.current += 1
-    setImprovements((current) => [...current, { id }])
+    setImprovements((current) => [...current, { id, files: [] }])
+  }
+
+  function handleFilesSelected(event, id) {
+    const selectedFiles = Array.from(event.currentTarget.files)
+    setImprovements((current) => current.map((improvement) => (
+      improvement.id === id
+        ? { ...improvement, files: [...improvement.files, ...selectedFiles] }
+        : improvement
+    )))
+    event.currentTarget.value = ''
   }
 
   function removeImprovement(id) {
@@ -70,25 +82,29 @@ function RequestsNew() {
     setImprovementToRemove(null)
   }
 
-  function handleRemoveImprovement(event, id) {
-    const improvement = getImprovementValues(event.currentTarget.form, id)
+  function handleRemoveImprovement(event, improvement) {
+    const improvementValues = getImprovementValues(event.currentTarget.form, improvement)
     const hasEnteredData = Boolean(
-      improvement.improvementType || improvement.description || improvement.files.length,
+      improvementValues.improvementType
+      || improvementValues.description
+      || improvementValues.files.length,
     )
 
     if (hasEnteredData) {
-      setImprovementToRemove(id)
+      setImprovementToRemove(improvement.id)
       return
     }
 
-    removeImprovement(id)
+    removeImprovement(improvement.id)
   }
 
   function handleCancelRequest(event) {
     const form = event.currentTarget.form
-    const hasEnteredData = improvements.some(({ id }) => {
-      const improvement = getImprovementValues(form, id)
-      return improvement.improvementType || improvement.description || improvement.files.length
+    const hasEnteredData = improvements.some((improvement) => {
+      const improvementValues = getImprovementValues(form, improvement)
+      return improvementValues.improvementType
+        || improvementValues.description
+        || improvementValues.files.length
     })
 
     if (hasEnteredData || improvements.length > 1) {
@@ -110,13 +126,13 @@ function RequestsNew() {
     }
 
     const form = event.currentTarget
-    const requestImprovements = improvements.map(({ id }) => {
-      const improvement = getImprovementValues(form, id)
+    const requestImprovements = improvements.map((improvement) => {
+      const improvementValues = getImprovementValues(form, improvement)
 
       return {
-        improvementType: improvement.improvementType,
-        description: improvement.description,
-        files: improvement.files.map((file) => ({
+        improvementType: improvementValues.improvementType,
+        description: improvementValues.description,
+        files: improvementValues.files.map((file) => ({
           name: file.name,
           size: file.size,
           type: file.type,
@@ -151,7 +167,10 @@ function RequestsNew() {
         )}
 
         <div className="requests-new-improvements">
-          {improvements.map(({ id }, index) => (
+          {improvements.map((improvement, index) => {
+            const { id, files } = improvement
+
+            return (
             <section className="requests-new-improvement" key={id} aria-label={`Improvement ${index + 1}`}>
               <div className="requests-new-improvement-header">
                 {index > 0 && (
@@ -159,7 +178,7 @@ function RequestsNew() {
                     className="requests-new-improvement-remove"
                     type="button"
                     aria-label={`Remove improvement ${index + 1}`}
-                    onClick={(event) => handleRemoveImprovement(event, id)}
+                    onClick={(event) => handleRemoveImprovement(event, improvement)}
                   >
                     x
                   </button>
@@ -193,10 +212,19 @@ function RequestsNew() {
                   type="file"
                   aria-label={`Supporting Documentation ${index + 1}`}
                   multiple
+                  onChange={(event) => handleFilesSelected(event, id)}
                 />
+                {files.length > 0 && (
+                  <ul className="requests-new-file-list" aria-label={`Selected files ${index + 1}`}>
+                    {files.map((file, fileIndex) => (
+                      <li key={`${file.name}-${file.size}-${fileIndex}`}>{file.name}</li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </section>
-          ))}
+            )
+          })}
         </div>
 
         <div className="requests-new-add-improvement">
