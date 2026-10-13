@@ -128,12 +128,23 @@ describe('RequestsNew', () => {
     await user.type(screen.getByLabelText('Description 1*'), 'Paint the exterior')
 
     const fileInput = screen.getByLabelText('Supporting Documentation 1')
-    await user.upload(fileInput, new File(['first'], 'first.pdf', { type: 'application/pdf' }))
-    await user.upload(fileInput, new File(['second'], 'second.png', { type: 'image/png' }))
+    await user.upload(
+      fileInput,
+      new File([new Uint8Array(500_000)], 'first.pdf', { type: 'application/pdf' }),
+    )
+    await user.upload(
+      fileInput,
+      new File([new Uint8Array(2_000_000)], 'second.png', { type: 'image/png' }),
+    )
 
     const selectedFiles = within(screen.getByRole('list', { name: 'Selected files 1' }))
       .getAllByRole('listitem')
-    expect(selectedFiles.map((item) => item.textContent)).toEqual(['first.pdf', 'second.png'])
+    expect(selectedFiles[0]).toHaveTextContent('first.pdf')
+    expect(selectedFiles[0]).toHaveTextContent('500 KB')
+    expect(selectedFiles[1]).toHaveTextContent('second.png')
+    expect(selectedFiles[1]).toHaveTextContent('2 MB')
+    expect(selectedFiles[0].querySelector('.requests-new-file-details')).not.toBeEmptyDOMElement()
+    expect(fileInput).toHaveClass('requests-new-file-input--has-files')
 
     await user.click(screen.getByRole('button', { name: /submit request/i }))
 

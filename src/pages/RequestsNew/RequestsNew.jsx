@@ -22,6 +22,20 @@ const improvementOptions = [
   { label: 'Other', value: 'Other' },
 ]
 
+const uploadDateFormatter = new Intl.DateTimeFormat(undefined, {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+})
+
+const fileSizeFormatter = new Intl.NumberFormat(undefined, {
+  maximumFractionDigits: 2,
+})
+
+function formatFileSize(size) {
+  if (size < 1_000_000) return `${fileSizeFormatter.format(size / 1_000)} KB`
+  return `${fileSizeFormatter.format(size / 1_000_000)} MB`
+}
+
 function RequestsNew() {
   const navigate = useNavigate()
   const [alertMessage, setAlertMessage] = useState('')
@@ -67,7 +81,8 @@ function RequestsNew() {
   }
 
   function handleFilesSelected(event, id) {
-    const selectedFiles = Array.from(event.currentTarget.files)
+    const uploadedAt = new Date()
+    const selectedFiles = Array.from(event.currentTarget.files, (file) => ({ file, uploadedAt }))
     setImprovements((current) => current.map((improvement) => (
       improvement.id === id
         ? { ...improvement, files: [...improvement.files, ...selectedFiles] }
@@ -132,7 +147,7 @@ function RequestsNew() {
       return {
         improvementType: improvementValues.improvementType,
         description: improvementValues.description,
-        files: improvementValues.files.map((file) => ({
+        files: improvementValues.files.map(({ file }) => ({
           name: file.name,
           size: file.size,
           type: file.type,
@@ -205,19 +220,28 @@ function RequestsNew() {
                 invalid={invalidFields.includes(`description-${id}`)}
               />
 
-              <div className="field field--left">
+              <div className="field requests-new-upload">
                 <input
                   id={`supportingDocs-${id}`}
                   name={`supportingDocs-${id}`}
                   type="file"
+                  className={files.length ? 'requests-new-file-input--has-files' : undefined}
                   aria-label={`Supporting Documentation ${index + 1}`}
                   multiple
                   onChange={(event) => handleFilesSelected(event, id)}
                 />
                 {files.length > 0 && (
                   <ul className="requests-new-file-list" aria-label={`Selected files ${index + 1}`}>
-                    {files.map((file, fileIndex) => (
-                      <li key={`${file.name}-${file.size}-${fileIndex}`}>{file.name}</li>
+                    {files.map(({ file, uploadedAt }, fileIndex) => (
+                      <li
+                        className="requests-new-file"
+                        key={`${file.name}-${file.size}-${fileIndex}`}
+                      >
+                        <span className="requests-new-file-name">{file.name}</span>
+                        <span className="requests-new-file-details">
+                          {uploadDateFormatter.format(uploadedAt)} · {formatFileSize(file.size)}
+                        </span>
+                      </li>
                     ))}
                   </ul>
                 )}
