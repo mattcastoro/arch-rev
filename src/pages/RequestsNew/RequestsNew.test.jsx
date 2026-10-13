@@ -155,6 +155,36 @@ describe('RequestsNew', () => {
     ])
   })
 
+  test('removes a previously selected file before submission', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter>
+        <RequestsNew />
+      </MemoryRouter>,
+    )
+
+    await user.selectOptions(screen.getByLabelText('Improvement Type 1*'), 'Painting')
+    await user.type(screen.getByLabelText('Description 1*'), 'Paint the exterior')
+
+    const fileInput = screen.getByLabelText('Supporting Documentation 1')
+    await user.upload(fileInput, [
+      new File(['first'], 'first.pdf', { type: 'application/pdf' }),
+      new File(['second'], 'second.png', { type: 'image/png' }),
+    ])
+    await user.click(screen.getByRole('button', { name: 'Remove first.pdf' }))
+
+    expect(screen.queryByText('first.pdf')).not.toBeInTheDocument()
+    expect(screen.getByText('second.png')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /submit request/i }))
+
+    const [request] = JSON.parse(localStorage.getItem(storageKeys.REQUESTS_KEY))
+    expect(request.improvements[0].files).toEqual([
+      expect.objectContaining({ name: 'second.png' }),
+    ])
+  })
+
   test('adds and submits multiple improvements with separate files', async () => {
     const user = userEvent.setup()
 

@@ -91,6 +91,22 @@ function RequestsNew() {
     event.currentTarget.value = ''
   }
 
+  function removeFile(id, fileIndex) {
+    setImprovements((current) => {
+      const improvementIndex = current.findIndex((improvement) => improvement.id === id)
+      const nextImprovements = [...current]
+      const improvement = nextImprovements[improvementIndex]
+      nextImprovements[improvementIndex] = {
+        ...improvement,
+        files: [
+          ...improvement.files.slice(0, fileIndex),
+          ...improvement.files.slice(fileIndex + 1),
+        ],
+      }
+      return nextImprovements
+    })
+  }
+
   function removeImprovement(id) {
     setImprovements((current) => current.filter((improvement) => improvement.id !== id))
     setInvalidFields((current) => current.filter((field) => !field.endsWith(`-${id}`)))
@@ -237,10 +253,20 @@ function RequestsNew() {
                         className="requests-new-file"
                         key={`${file.name}-${file.size}-${fileIndex}`}
                       >
-                        <span className="requests-new-file-name">{file.name}</span>
-                        <span className="requests-new-file-details">
-                          {uploadDateFormatter.format(uploadedAt)} · {formatFileSize(file.size)}
+                        <span className="requests-new-file-information">
+                          <span className="requests-new-file-name">{file.name}</span>
+                          <span className="requests-new-file-details">
+                            {uploadDateFormatter.format(uploadedAt)} · {formatFileSize(file.size)}
+                          </span>
                         </span>
+                        <button
+                          className="requests-new-file-remove"
+                          type="button"
+                          aria-label={`Remove ${file.name}`}
+                          onClick={() => removeFile(id, fileIndex)}
+                        >
+                          ×
+                        </button>
                       </li>
                     ))}
                   </ul>

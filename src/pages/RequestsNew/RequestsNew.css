@@ -141,19 +141,69 @@
 
 .requests-new-file {
   display: flex;
-  flex-wrap: wrap;
   justify-content: space-between;
+  align-items: center;
   gap: 0.25rem 1rem;
 }
 
+.requests-new-file-information {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .requests-new-file-name {
+  min-width: 0;
+  overflow: hidden;
   color: var(--gray-900);
   font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .requests-new-file-details {
+  flex: none;
   color: var(--gray-600);
   font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.requests-new-file-remove {
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 1px solid var(--gray-300);
+  border-radius: 50%;
+  background: white;
+  color: var(--error);
+  font: inherit;
+  font-size: 1.125rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.requests-new-file-remove:hover,
+.requests-new-file-remove:focus-visible {
+  border-color: var(--error);
+}
+
+.requests-new-file-remove:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+@media (max-width: 767px) {
+  .requests-new-file-name {
+    font-size: 0.875rem;
+  }
+
+  .requests-new-file-details {
+    font-size: 0.75rem;
+  }
 }
 
 .requests-new-actions {
