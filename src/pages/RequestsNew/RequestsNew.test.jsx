@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import RequestsNew from './RequestsNew'
@@ -140,11 +140,16 @@ describe('RequestsNew', () => {
     const selectedFiles = within(screen.getByRole('list', { name: 'Selected files 1' }))
       .getAllByRole('listitem')
     expect(selectedFiles[0]).toHaveTextContent('first.pdf')
-    expect(selectedFiles[0]).toHaveTextContent('500 KB')
     expect(selectedFiles[1]).toHaveTextContent('second.png')
+    expect(fileInput).toHaveClass('requests-new-file-input--has-files')
+    expect(screen.getByRole('progressbar', { name: 'Uploading first.pdf' })).toBeInTheDocument()
+    expect(screen.getByRole('progressbar', { name: 'Uploading second.png' })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
+    })
+    expect(selectedFiles[0]).toHaveTextContent('500 KB')
     expect(selectedFiles[1]).toHaveTextContent('2 MB')
     expect(selectedFiles[0].querySelector('.requests-new-file-details')).not.toBeEmptyDOMElement()
-    expect(fileInput).toHaveClass('requests-new-file-input--has-files')
 
     await user.click(screen.getByRole('button', { name: /submit request/i }))
 

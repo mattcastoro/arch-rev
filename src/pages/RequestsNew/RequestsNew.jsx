@@ -1,5 +1,5 @@
 import '../../App.css'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Alert from '../../components/Alert/Alert'
 import Button from '../../components/Button/Button'
@@ -44,6 +44,11 @@ function RequestsNew() {
   const [improvementToRemove, setImprovementToRemove] = useState(null)
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false)
   const nextImprovementId = useRef(1)
+  const uploadTimers = useRef(new Map())
+
+  useEffect(() => () => {
+    uploadTimers.current.forEach((timer) => clearTimeout(timer))
+  }, [])
 
   function getImprovementValues(form, improvement) {
     const formData = new FormData(form)
@@ -82,13 +87,33 @@ function RequestsNew() {
 
   function handleFilesSelected(event, id) {
     const uploadedAt = new Date()
-    const selectedFiles = Array.from(event.currentTarget.files, (file) => ({ file, uploadedAt }))
+    const selectedFiles = Array.from(event.currentTarget.files, (file) => ({
+      file,
+      uploadedAt,
+      uploading: true,
+    }))
     setImprovements((current) => current.map((improvement) => (
       improvement.id === id
         ? { ...improvement, files: [...improvement.files, ...selectedFiles] }
         : improvement
     )))
     event.currentTarget.value = ''
+
+    clearTimeout(uploadTimers.current.get(id))
+    const timer = setTimeout(() => {
+      setImprovements((current) => {
+        const improvementIndex = current.findIndex((improvement) => improvement.id === id)
+        const nextImprovements = [...current]
+        const improvement = nextImprovements[improvementIndex]
+        nextImprovements[improvementIndex] = {
+          ...improvement,
+          files: improvement.files.map((fileEntry) => ({ ...fileEntry, uploading: false })),
+        }
+        return nextImprovements
+      })
+      uploadTimers.current.delete(id)
+    }, 700)
+    uploadTimers.current.set(id, timer)
   }
 
   function removeFile(id, fileIndex) {
@@ -108,6 +133,8 @@ function RequestsNew() {
   }
 
   function removeImprovement(id) {
+    clearTimeout(uploadTimers.current.get(id))
+    uploadTimers.current.delete(id)
     setImprovements((current) => current.filter((improvement) => improvement.id !== id))
     setInvalidFields((current) => current.filter((field) => !field.endsWith(`-${id}`)))
     setImprovementToRemove(null)
@@ -248,16 +275,29 @@ function RequestsNew() {
                 />
                 {files.length > 0 && (
                   <ul className="requests-new-file-list" aria-label={`Selected files ${index + 1}`}>
-                    {files.map(({ file, uploadedAt }, fileIndex) => (
+                    {files.map(({ file, uploadedAt, uploading }, fileIndex) => (
                       <li
                         className="requests-new-file"
                         key={`${file.name}-${file.size}-${fileIndex}`}
                       >
                         <span className="requests-new-file-information">
                           <span className="requests-new-file-name">{file.name}</span>
-                          <span className="requests-new-file-details">
-                            {uploadDateFormatter.format(uploadedAt)} · {formatFileSize(file.size)}
-                          </span>
+                          {uploading ? (
+                            <span className="requests-new-file-uploading" aria-live="polite">
+                              <span className="requests-new-file-uploading-label">Uploading…</span>
+                              <span
+                                className="requests-new-upload-progress-track"
+                                role="progressbar"
+                                aria-label={`Uploading ${file.name}`}
+                              >
+                                <span className="requests-new-upload-progress-bar" />
+                              </span>
+                            </span>
+                          ) : (
+                            <span className="requests-new-file-details">
+                              {uploadDateFormatter.format(uploadedAt)} · {formatFileSize(file.size)}
+                            </span>
+                          )}
                         </span>
                         <button
                           className="requests-new-file-remove"
