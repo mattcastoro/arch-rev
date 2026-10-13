@@ -109,6 +109,7 @@ export function createRequest(requestInput) {
     improvementType: requestInput.improvementType,
     description: requestInput.description,
     files: requestInput.files,
+    links: requestInput.links,
   }]
   const firstImprovement = improvements[0]
   const request = {
@@ -118,6 +119,7 @@ export function createRequest(requestInput) {
     improvementType: firstImprovement.improvementType,
     description: firstImprovement.description,
     files: firstImprovement.files,
+    links: firstImprovement.links ?? [],
     status: 'Submitted',
     createdAt: new Date().toISOString(),
   }

@@ -40,7 +40,10 @@ function RequestsNew() {
   const navigate = useNavigate()
   const [alertMessage, setAlertMessage] = useState('')
   const [invalidFields, setInvalidFields] = useState([])
-  const [improvements, setImprovements] = useState([{ id: 0, files: [] }])
+  const [improvements, setImprovements] = useState([{ id: 0, files: [], links: [] }])
+  const [attachmentMenuId, setAttachmentMenuId] = useState(null)
+  const [linkEditorId, setLinkEditorId] = useState(null)
+  const [linkDrafts, setLinkDrafts] = useState({})
   const [improvementToRemove, setImprovementToRemove] = useState(null)
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false)
   const nextImprovementId = useRef(1)
@@ -52,12 +55,13 @@ function RequestsNew() {
 
   function getImprovementValues(form, improvement) {
     const formData = new FormData(form)
-    const { id, files } = improvement
+    const { id, files, links } = improvement
 
     return {
       improvementType: formData.get(`improvementType-${id}`)?.toString() || '',
       description: formData.get(`description-${id}`)?.toString().trim() || '',
       files,
+      links,
     }
   }
 
@@ -82,7 +86,50 @@ function RequestsNew() {
 
     const id = nextImprovementId.current
     nextImprovementId.current += 1
-    setImprovements((current) => [...current, { id, files: [] }])
+    setImprovements((current) => [...current, { id, files: [], links: [] }])
+  }
+
+  function openFilePicker(id, inputType) {
+    document.getElementById(`${inputType}-${id}`).click()
+    setAttachmentMenuId(null)
+  }
+
+  function showLinkEditor(id) {
+    setLinkEditorId(id)
+    setAttachmentMenuId(null)
+  }
+
+  function addLink(id) {
+    const url = (linkDrafts[id] || '').trim()
+    if (!/^https?:\/\//i.test(url)) {
+      setAlertMessage('Enter a valid website link beginning with http:// or https://.')
+      return
+    }
+
+    setImprovements((current) => current.map((improvement) => (
+      improvement.id === id
+        ? { ...improvement, links: [...improvement.links, { url, addedAt: new Date() }] }
+        : improvement
+    )))
+    setLinkDrafts((current) => ({ ...current, [id]: '' }))
+    setLinkEditorId(null)
+    setAlertMessage('')
+  }
+
+  function removeLink(id, linkIndex) {
+    setImprovements((current) => {
+      const improvementIndex = current.findIndex((improvement) => improvement.id === id)
+      const nextImprovements = [...current]
+      const improvement = nextImprovements[improvementIndex]
+      nextImprovements[improvementIndex] = {
+        ...improvement,
+        links: [
+          ...improvement.links.slice(0, linkIndex),
+          ...improvement.links.slice(linkIndex + 1),
+        ],
+      }
+      return nextImprovements
+    })
   }
 
   function handleFilesSelected(event, id) {
@@ -145,7 +192,8 @@ function RequestsNew() {
     const hasEnteredData = Boolean(
       improvementValues.improvementType
       || improvementValues.description
-      || improvementValues.files.length,
+      || improvementValues.files.length
+      || improvementValues.links.length,
     )
 
     if (hasEnteredData) {
@@ -163,6 +211,7 @@ function RequestsNew() {
       return improvementValues.improvementType
         || improvementValues.description
         || improvementValues.files.length
+        || improvementValues.links.length
     })
 
     if (hasEnteredData || improvements.length > 1) {
@@ -195,6 +244,10 @@ function RequestsNew() {
           size: file.size,
           type: file.type,
         })),
+        links: improvementValues.links.map(({ url, addedAt }) => ({
+          url,
+          addedAt: addedAt.toISOString(),
+        })),
       }
     })
 
@@ -226,7 +279,7 @@ function RequestsNew() {
 
         <div className="requests-new-improvements">
           {improvements.map((improvement, index) => {
-            const { id, files } = improvement
+            const { id, files, links } = improvement
 
             return (
             <section className="requests-new-improvement" key={id} aria-label={`Improvement ${index + 1}`}>
@@ -264,15 +317,69 @@ function RequestsNew() {
               />
 
               <div className="field requests-new-upload">
+                <div className="requests-new-attachment-actions">
+                  <div className="requests-new-attachment-menu-wrapper">
+                    <button
+                      className="requests-new-attachment-trigger"
+                      type="button"
+                      aria-expanded={attachmentMenuId === id}
+                      aria-haspopup="menu"
+                      onClick={() => setAttachmentMenuId(attachmentMenuId === id ? null : id)}
+                    >
+                      Add attachment <span aria-hidden="true">▾</span>
+                    </button>
+                    {attachmentMenuId === id && (
+                      <div className="requests-new-attachment-menu" role="menu">
+                        <button type="button" role="menuitem" onClick={() => openFilePicker(id, 'supportingDocs')}>
+                          Upload from device
+                        </button>
+                        <button type="button" role="menuitem" onClick={() => showLinkEditor(id)}>
+                          Add website link
+                        </button>
+                        <button type="button" role="menuitem" onClick={() => openFilePicker(id, 'cameraPhoto')}>
+                          Take a photo
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <span className="requests-new-upload-guidance">
+                    PDF, JPG, or PNG · Max 10MB per file · Up to 10 files
+                  </span>
+                </div>
                 <input
                   id={`supportingDocs-${id}`}
                   name={`supportingDocs-${id}`}
                   type="file"
-                  className={files.length ? 'requests-new-file-input--has-files' : undefined}
+                  className="requests-new-file-input"
                   aria-label={`Supporting Documentation ${index + 1}`}
+                  accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
                   multiple
                   onChange={(event) => handleFilesSelected(event, id)}
                 />
+                <input
+                  id={`cameraPhoto-${id}`}
+                  type="file"
+                  className="requests-new-file-input"
+                  aria-label={`Take Photo ${index + 1}`}
+                  accept="image/*"
+                  capture="environment"
+                  onChange={(event) => handleFilesSelected(event, id)}
+                />
+                {linkEditorId === id && (
+                  <div className="requests-new-link-editor">
+                    <input
+                      type="url"
+                      aria-label={`Website Link ${index + 1}`}
+                      placeholder="https://example.com"
+                      value={linkDrafts[id] || ''}
+                      onChange={(event) => setLinkDrafts((current) => ({
+                        ...current,
+                        [id]: event.target.value,
+                      }))}
+                    />
+                    <button type="button" onClick={() => addLink(id)}>Add Link</button>
+                  </div>
+                )}
                 {files.length > 0 && (
                   <ul className="requests-new-file-list" aria-label={`Selected files ${index + 1}`}>
                     {files.map(({ file, uploadedAt, uploading }, fileIndex) => (
@@ -307,6 +414,19 @@ function RequestsNew() {
                         >
                           ×
                         </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {links.length > 0 && (
+                  <ul className="requests-new-file-list" aria-label={`Added links ${index + 1}`}>
+                    {links.map(({ url, addedAt }, linkIndex) => (
+                      <li className="requests-new-file" key={`${url}-${linkIndex}`}>
+                        <span className="requests-new-file-information">
+                          <a className="requests-new-file-name" href={url} target="_blank" rel="noreferrer">{url}</a>
+                          <span className="requests-new-file-details">{uploadDateFormatter.format(addedAt)}</span>
+                        </span>
+                        <button className="requests-new-file-remove" type="button" aria-label={`Remove ${url}`} onClick={() => removeLink(id, linkIndex)}>×</button>
                       </li>
                     ))}
                   </ul>

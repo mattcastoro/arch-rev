@@ -141,7 +141,7 @@ describe('RequestsNew', () => {
       .getAllByRole('listitem')
     expect(selectedFiles[0]).toHaveTextContent('first.pdf')
     expect(selectedFiles[1]).toHaveTextContent('second.png')
-    expect(fileInput).toHaveClass('requests-new-file-input--has-files')
+    expect(fileInput).toHaveClass('requests-new-file-input')
     expect(screen.getByRole('progressbar', { name: 'Uploading first.pdf' })).toBeInTheDocument()
     expect(screen.getByRole('progressbar', { name: 'Uploading second.png' })).toBeInTheDocument()
     await waitFor(() => {
@@ -188,6 +188,74 @@ describe('RequestsNew', () => {
     expect(request.improvements[0].files).toEqual([
       expect.objectContaining({ name: 'second.png' }),
     ])
+  })
+
+  test('offers device, website link, and camera attachment options', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter>
+        <RequestsNew />
+      </MemoryRouter>,
+    )
+
+    const trigger = screen.getByRole('button', { name: /add attachment/i })
+    await user.click(trigger)
+    expect(screen.getByRole('menuitem', { name: /upload from device/i })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: /add website link/i })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: /take a photo/i })).toBeInTheDocument()
+    expect(screen.getByLabelText('Supporting Documentation 1')).toHaveAttribute(
+      'accept',
+      expect.stringContaining('application/pdf'),
+    )
+    expect(screen.getByLabelText('Take Photo 1')).toHaveAttribute('capture', 'environment')
+
+    await user.click(trigger)
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+    await user.click(trigger)
+    await user.click(screen.getByRole('menuitem', { name: /upload from device/i }))
+    await user.click(trigger)
+    await user.click(screen.getByRole('menuitem', { name: /take a photo/i }))
+  })
+
+  test('adds, persists, and removes website links', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter>
+        <RequestsNew />
+      </MemoryRouter>,
+    )
+
+    await user.selectOptions(screen.getByLabelText('Improvement Type 1*'), 'Painting')
+    await user.type(screen.getByLabelText('Description 1*'), 'Paint the exterior')
+    const trigger = screen.getByRole('button', { name: /add attachment/i })
+    await user.click(trigger)
+    await user.click(screen.getByRole('menuitem', { name: /add website link/i }))
+
+    const linkInput = screen.getByLabelText('Website Link 1')
+    await user.type(linkInput, 'example.com')
+    await user.click(screen.getByRole('button', { name: 'Add Link' }))
+    expect(screen.getByText(/beginning with http/i)).toBeInTheDocument()
+
+    await user.clear(linkInput)
+    await user.type(linkInput, 'https://example.com/plans')
+    await user.click(screen.getByRole('button', { name: 'Add Link' }))
+    expect(screen.getByRole('link', { name: 'https://example.com/plans' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Remove https://example.com/plans' }))
+    expect(screen.queryByRole('link', { name: 'https://example.com/plans' })).not.toBeInTheDocument()
+
+    await user.click(trigger)
+    await user.click(screen.getByRole('menuitem', { name: /add website link/i }))
+    await user.type(screen.getByLabelText('Website Link 1'), 'https://example.com/final')
+    await user.click(screen.getByRole('button', { name: 'Add Link' }))
+    await user.click(screen.getByRole('button', { name: /submit request/i }))
+
+    const [request] = JSON.parse(localStorage.getItem(storageKeys.REQUESTS_KEY))
+    expect(request.improvements[0].links).toEqual([
+      expect.objectContaining({ url: 'https://example.com/final' }),
+    ])
+    expect(request.links).toEqual(request.improvements[0].links)
   })
 
   test('adds and submits multiple improvements with separate files', async () => {
