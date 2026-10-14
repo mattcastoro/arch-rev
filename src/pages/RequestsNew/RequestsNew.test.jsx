@@ -181,6 +181,14 @@ describe('RequestsNew', () => {
     ])
     await user.click(screen.getByRole('button', { name: 'Remove first.pdf' }))
 
+    const dialog = screen.getByRole('dialog', { name: /delete file/i })
+    expect(within(dialog).getByText(/first\.pdf/i)).toBeInTheDocument()
+    await user.click(within(dialog).getByRole('button', { name: /cancel/i }))
+    expect(screen.getByText('first.pdf')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Remove first.pdf' }))
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /delete file/i }))
+
     expect(screen.queryByText('first.pdf')).not.toBeInTheDocument()
     expect(screen.getByText('second.png')).toBeInTheDocument()
 
@@ -371,6 +379,12 @@ describe('RequestsNew', () => {
     await user.click(screen.getByRole('button', { name: 'Add Link' }))
     expect(screen.getByText('This website link has already been added.')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Remove https://example.com/plans' }))
+    const deleteLinkDialog = screen.getByRole('dialog', { name: /delete link/i })
+    await user.click(within(deleteLinkDialog).getByRole('button', { name: /cancel/i }))
+    expect(screen.getByRole('link', { name: 'https://example.com/plans' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Remove https://example.com/plans' }))
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /delete link/i }))
     expect(screen.queryByRole('link', { name: 'https://example.com/plans' })).not.toBeInTheDocument()
 
     await user.click(trigger)

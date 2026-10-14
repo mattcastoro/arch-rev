@@ -76,6 +76,8 @@ function RequestsNew() {
   const [attachmentErrors, setAttachmentErrors] = useState({})
   const [duplicateFile, setDuplicateFile] = useState(null)
   const [desktopCameraPromptId, setDesktopCameraPromptId] = useState(null)
+  const [fileToRemove, setFileToRemove] = useState(null)
+  const [linkToRemove, setLinkToRemove] = useState(null)
   const [improvementToRemove, setImprovementToRemove] = useState(null)
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false)
   const nextImprovementId = useRef(1)
@@ -250,6 +252,7 @@ function RequestsNew() {
       }
       return nextImprovements
     })
+    setLinkToRemove(null)
   }
 
   function handleFilesSelected(event, id) {
@@ -333,6 +336,7 @@ function RequestsNew() {
       }
       return nextImprovements
     })
+    setFileToRemove(null)
   }
 
   function removeImprovement(id) {
@@ -607,7 +611,7 @@ function RequestsNew() {
                           className="requests-new-file-remove"
                           type="button"
                           aria-label={`Remove ${file.name}`}
-                          onClick={() => removeFile(id, fileIndex)}
+                          onClick={() => setFileToRemove({ id, fileIndex, name: file.name })}
                         >
                           <TrashIcon />
                         </button>
@@ -639,7 +643,12 @@ function RequestsNew() {
                           >
                             <PencilIcon />
                           </button>
-                          <button className="requests-new-file-remove" type="button" aria-label={`Remove ${url}`} onClick={() => removeLink(id, linkIndex)}>
+                          <button
+                            className="requests-new-file-remove"
+                            type="button"
+                            aria-label={`Remove ${url}`}
+                            onClick={() => setLinkToRemove({ id, linkIndex, url, description })}
+                          >
                             <TrashIcon />
                           </button>
                         </span>
@@ -764,6 +773,52 @@ function RequestsNew() {
               </Button>
               <Button type="button" variant="primary" size="btn-md" onClick={continueWithDesktopPhoto}>
                 Continue
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {fileToRemove && (
+        <div className="requests-new-modal-backdrop" role="presentation">
+          <div className="requests-new-modal" role="dialog" aria-modal="true" aria-labelledby="delete-file-title">
+            <h2 id="delete-file-title">Delete file?</h2>
+            <p>Are you sure you want to delete “{fileToRemove.name}”?</p>
+            <div className="requests-new-modal-actions">
+              <Button type="button" variant="secondary" size="btn-md" onClick={() => setFileToRemove(null)}>
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                size="btn-md"
+                onClick={() => removeFile(fileToRemove.id, fileToRemove.fileIndex)}
+              >
+                Delete File
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {linkToRemove && (
+        <div className="requests-new-modal-backdrop" role="presentation">
+          <div className="requests-new-modal" role="dialog" aria-modal="true" aria-labelledby="delete-link-title">
+            <h2 id="delete-link-title">Delete link?</h2>
+            <p>
+              Are you sure you want to delete “{linkToRemove.description || linkToRemove.url}”?
+            </p>
+            <div className="requests-new-modal-actions">
+              <Button type="button" variant="secondary" size="btn-md" onClick={() => setLinkToRemove(null)}>
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                size="btn-md"
+                onClick={() => removeLink(linkToRemove.id, linkToRemove.linkIndex)}
+              >
+                Delete Link
               </Button>
             </div>
           </div>
