@@ -81,6 +81,7 @@ h1, h2, label, p {overflow-wrap: break-word;}
 
   /* Semantic */
   --error: #ef4444;
+  --error-dark: #b91c1c;
   --warning: #f59e0b;
   --success: #22c55e;
 

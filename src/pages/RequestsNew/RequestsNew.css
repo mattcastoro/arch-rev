@@ -411,16 +411,22 @@
   border: none;
   border-radius: 50%;
   background: white;
-  color: var(--gray-700);
+  color: var(--primary-500);
   font-size: 1.5rem;
   line-height: 1;
   cursor: pointer;
 }
 
-.requests-new-link-edit:hover,
-.requests-new-link-edit:focus-visible {
-  border-color: var(--primary-500);
-  color: var(--primary-700);
+.requests-new-file-remove svg,
+.requests-new-link-edit svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .requests-new-link-edit:focus-visible {
@@ -428,14 +434,19 @@
   box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
 }
 
-.requests-new-file-remove:hover,
-.requests-new-file-remove:focus-visible {
-  border-color: var(--error);
-}
-
 .requests-new-file-remove:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .requests-new-link-edit:hover {
+    color: var(--primary-700);
+  }
+
+  .requests-new-file-remove:hover {
+    color: var(--error-dark);
+  }
 }
 
 @media (max-width: 767px) {

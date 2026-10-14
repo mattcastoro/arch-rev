@@ -46,6 +46,22 @@ function getFileValidationError(file) {
   return ''
 }
 
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m4 4v6m6-6v6" />
+    </svg>
+  )
+}
+
+function PencilIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Zm10-12 3 3" />
+    </svg>
+  )
+}
+
 function RequestsNew() {
   const navigate = useNavigate()
   const [alertMessage, setAlertMessage] = useState('')
@@ -593,7 +609,7 @@ function RequestsNew() {
                           aria-label={`Remove ${file.name}`}
                           onClick={() => removeFile(id, fileIndex)}
                         >
-                          <span aria-hidden="true">🗑</span>
+                          <TrashIcon />
                         </button>
                       </li>
                     ))}
@@ -621,10 +637,10 @@ function RequestsNew() {
                             aria-label={`Edit ${url}`}
                             onClick={() => editLink(id, linkIndex, { url, description })}
                           >
-                            <span aria-hidden="true">✎</span>
+                            <PencilIcon />
                           </button>
                           <button className="requests-new-file-remove" type="button" aria-label={`Remove ${url}`} onClick={() => removeLink(id, linkIndex)}>
-                            <span aria-hidden="true">🗑</span>
+                            <TrashIcon />
                           </button>
                         </span>
                       </li>
