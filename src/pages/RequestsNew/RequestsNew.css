@@ -203,6 +203,8 @@
 
 .requests-new-link-editor input {
   min-width: 0;
+  width: auto;
+  flex: 1;
 }
 
 .requests-new-link-editor-actions {
@@ -411,6 +413,10 @@
   .requests-new-link-editor {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .requests-new-link-editor input {
+    width: 100%;
   }
 
   .requests-new-link-editor-actions {

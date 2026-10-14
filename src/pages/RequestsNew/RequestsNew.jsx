@@ -54,6 +54,7 @@ function RequestsNew() {
   const [attachmentMenuId, setAttachmentMenuId] = useState(null)
   const [linkEditorId, setLinkEditorId] = useState(null)
   const [linkDrafts, setLinkDrafts] = useState({})
+  const [linkDescriptionDrafts, setLinkDescriptionDrafts] = useState({})
   const [filePreview, setFilePreview] = useState(null)
   const [attachmentErrors, setAttachmentErrors] = useState({})
   const [duplicateFile, setDuplicateFile] = useState(null)
@@ -160,6 +161,7 @@ function RequestsNew() {
 
   function cancelLinkEditor(id) {
     setLinkDrafts((current) => ({ ...current, [id]: '' }))
+    setLinkDescriptionDrafts((current) => ({ ...current, [id]: '' }))
     setLinkEditorId(null)
     setAlertMessage('')
     setAttachmentErrors((current) => ({ ...current, [id]: '' }))
@@ -167,6 +169,7 @@ function RequestsNew() {
 
   function addLink(id) {
     const url = (linkDrafts[id] || '').trim()
+    const description = (linkDescriptionDrafts[id] || '').trim()
     if (!/^https?:\/\//i.test(url)) {
       setAlertMessage('Enter a valid website link beginning with http:// or https://.')
       return
@@ -180,10 +183,11 @@ function RequestsNew() {
 
     setImprovements((current) => current.map((improvement) => (
       improvement.id === id
-        ? { ...improvement, links: [...improvement.links, { url, addedAt: new Date() }] }
+        ? { ...improvement, links: [...improvement.links, { url, description, addedAt: new Date() }] }
         : improvement
     )))
     setLinkDrafts((current) => ({ ...current, [id]: '' }))
+    setLinkDescriptionDrafts((current) => ({ ...current, [id]: '' }))
     setLinkEditorId(null)
     setAlertMessage('')
     setAttachmentErrors((current) => ({ ...current, [id]: '' }))
@@ -353,8 +357,9 @@ function RequestsNew() {
           size: file.size,
           type: file.type,
         })),
-        links: improvementValues.links.map(({ url, addedAt }) => ({
+        links: improvementValues.links.map(({ url, description, addedAt }) => ({
           url,
+          description,
           addedAt: addedAt.toISOString(),
         })),
       }
@@ -486,6 +491,17 @@ function RequestsNew() {
                         [id]: event.target.value,
                       }))}
                     />
+                    <input
+                      type="text"
+                      aria-label={`Link Description ${index + 1}`}
+                      placeholder="Description (optional)"
+                      maxLength={100}
+                      value={linkDescriptionDrafts[id] || ''}
+                      onChange={(event) => setLinkDescriptionDrafts((current) => ({
+                        ...current,
+                        [id]: event.target.value,
+                      }))}
+                    />
                     <div className="requests-new-link-editor-actions">
                       <button
                         className="requests-new-link-cancel"
@@ -562,10 +578,12 @@ function RequestsNew() {
                 )}
                 {links.length > 0 && (
                   <ul className="requests-new-file-list" aria-label={`Added links ${index + 1}`}>
-                    {links.map(({ url, addedAt }, linkIndex) => (
+                    {links.map(({ url, description, addedAt }, linkIndex) => (
                       <li className="requests-new-file" key={`${url}-${linkIndex}`}>
                         <span className="requests-new-file-information">
-                          <a className="requests-new-file-name" href={url} target="_blank" rel="noreferrer">{url}</a>
+                          <a className="requests-new-file-name" href={url} target="_blank" rel="noreferrer">
+                            {description || url}
+                          </a>
                           <span className="requests-new-file-details">{uploadDateFormatter.format(addedAt)}</span>
                         </span>
                         <button className="requests-new-file-remove" type="button" aria-label={`Remove ${url}`} onClick={() => removeLink(id, linkIndex)}>×</button>

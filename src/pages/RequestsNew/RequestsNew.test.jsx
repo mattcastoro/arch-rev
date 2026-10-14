@@ -298,10 +298,10 @@ describe('RequestsNew', () => {
     await user.click(screen.getByRole('menuitem', { name: /upload from device/i }))
     await user.click(trigger)
     await user.click(screen.getByRole('menuitem', { name: /take a photo/i }))
-    const cameraDialog = screen.getByRole('dialog', { name: /take a photo on your phone/i })
-    expect(within(cameraDialog).getByText(/select an existing image file/i)).toBeInTheDocument()
+    const cameraDialog = screen.getByRole('dialog', { name: /camera capture/i })
+    expect(within(cameraDialog).getByText(/select an existing file/i)).toBeInTheDocument()
     await user.click(within(cameraDialog).getByRole('button', { name: /cancel/i }))
-    expect(screen.queryByRole('dialog', { name: /take a photo on your phone/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: /camera capture/i })).not.toBeInTheDocument()
   })
 
   test('continues to the image picker from the desktop camera notice', async () => {
@@ -336,7 +336,7 @@ describe('RequestsNew', () => {
     await user.click(screen.getByRole('button', { name: /add attachment/i }))
     await user.click(screen.getByRole('menuitem', { name: /take a photo/i }))
     expect(clickSpy).toHaveBeenCalled()
-    expect(screen.queryByRole('dialog', { name: /take a photo on your phone/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: /camera capture/i })).not.toBeInTheDocument()
 
     window.innerWidth = desktopWidth
   })
@@ -377,12 +377,16 @@ describe('RequestsNew', () => {
     await user.click(screen.getByRole('menuitem', { name: /add website link/i }))
     await user.clear(screen.getByLabelText('Website Link 1'))
     await user.type(screen.getByLabelText('Website Link 1'), 'https://example.com/final')
+    await user.type(screen.getByLabelText('Link Description 1'), 'Final project plans')
     await user.click(screen.getByRole('button', { name: 'Add Link' }))
     await user.click(screen.getByRole('button', { name: /submit request/i }))
 
     const [request] = JSON.parse(localStorage.getItem(storageKeys.REQUESTS_KEY))
     expect(request.improvements[0].links).toEqual([
-      expect.objectContaining({ url: 'https://example.com/final' }),
+      expect.objectContaining({
+        url: 'https://example.com/final',
+        description: 'Final project plans',
+      }),
     ])
     expect(request.links).toEqual(request.improvements[0].links)
   })
@@ -400,6 +404,7 @@ describe('RequestsNew', () => {
     await user.click(trigger)
     await user.click(screen.getByRole('menuitem', { name: /add website link/i }))
     await user.type(screen.getByLabelText('Website Link 1'), 'unfinished-link')
+    await user.type(screen.getByLabelText('Link Description 1'), 'Unfinished description')
     await user.click(screen.getByRole('button', { name: 'Add Link' }))
     expect(screen.getByText(/beginning with http/i)).toBeInTheDocument()
 
@@ -411,6 +416,8 @@ describe('RequestsNew', () => {
     await user.click(trigger)
     await user.click(screen.getByRole('menuitem', { name: /add website link/i }))
     expect(screen.getByLabelText('Website Link 1')).toHaveValue('')
+    expect(screen.getByLabelText('Link Description 1')).toHaveValue('')
+    expect(screen.getByLabelText('Link Description 1')).toHaveAttribute('maxlength', '100')
   })
 
   test('adds and submits multiple improvements with separate files', async () => {
