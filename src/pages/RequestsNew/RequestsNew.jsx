@@ -68,6 +68,20 @@ function RequestsNew() {
     if (previewUrl.current) URL.revokeObjectURL(previewUrl.current)
   }, [])
 
+  useEffect(() => {
+    function closeAttachmentMenuOnOutsideClick(event) {
+      if (!event.target.closest('.requests-new-attachment-menu-wrapper')) {
+        setAttachmentMenuId(null)
+      }
+    }
+
+    if (attachmentMenuId !== null) {
+      document.addEventListener('mousedown', closeAttachmentMenuOnOutsideClick)
+    }
+
+    return () => document.removeEventListener('mousedown', closeAttachmentMenuOnOutsideClick)
+  }, [attachmentMenuId])
+
   function openFilePreview(file) {
     if (previewUrl.current) URL.revokeObjectURL(previewUrl.current)
     const url = URL.createObjectURL(file)
@@ -125,6 +139,13 @@ function RequestsNew() {
   function showLinkEditor(id) {
     setLinkEditorId(id)
     setAttachmentMenuId(null)
+  }
+
+  function cancelLinkEditor(id) {
+    setLinkDrafts((current) => ({ ...current, [id]: '' }))
+    setLinkEditorId(null)
+    setAlertMessage('')
+    setAttachmentErrors((current) => ({ ...current, [id]: '' }))
   }
 
   function addLink(id) {
@@ -448,7 +469,22 @@ function RequestsNew() {
                         [id]: event.target.value,
                       }))}
                     />
-                    <button type="button" onClick={() => addLink(id)}>Add Link</button>
+                    <div className="requests-new-link-editor-actions">
+                      <button
+                        className="requests-new-link-cancel"
+                        type="button"
+                        onClick={() => cancelLinkEditor(id)}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        className="requests-new-link-add"
+                        type="button"
+                        onClick={() => addLink(id)}
+                      >
+                        Add Link
+                      </button>
+                    </div>
                   </div>
                 )}
                 {attachmentErrors[id] && (

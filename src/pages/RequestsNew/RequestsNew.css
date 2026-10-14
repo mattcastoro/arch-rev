@@ -196,12 +196,50 @@
 
 .requests-new-link-editor {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
   margin-top: 0.75rem;
 }
 
 .requests-new-link-editor input {
   min-width: 0;
+}
+
+.requests-new-link-editor-actions {
+  display: flex;
+  flex: none;
+  gap: 0.5rem;
+}
+
+.requests-new-link-editor .requests-new-link-cancel {
+  border-color: transparent;
+  background: var(--gray-200);
+  color: var(--gray-900);
+  font-weight: 500;
+}
+
+.requests-new-link-editor .requests-new-link-cancel:hover {
+  border-color: transparent;
+  background: var(--gray-300);
+}
+
+.requests-new-link-editor .requests-new-link-add {
+  border-color: transparent;
+  background: var(--primary-500);
+  color: white;
+  font-weight: 500;
+}
+
+.requests-new-link-editor .requests-new-link-add:hover {
+  border-color: transparent;
+  background: var(--primary-700);
+}
+
+.requests-new-link-editor .requests-new-link-cancel:focus-visible,
+.requests-new-link-editor .requests-new-link-add:focus-visible {
+  outline: none;
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
 }
 
 .requests-new-attachment-error {
@@ -368,6 +406,15 @@
   .requests-new-attachment-actions {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .requests-new-link-editor {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .requests-new-link-editor-actions {
+    justify-content: flex-end;
   }
 
   .requests-new-file-information {

@@ -289,6 +289,9 @@ describe('RequestsNew', () => {
     )
     expect(screen.getByLabelText('Take Photo 1')).toHaveAttribute('capture', 'environment')
 
+    await user.click(screen.getByRole('heading', { name: /create new request/i }))
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+    await user.click(trigger)
     await user.click(trigger)
     expect(screen.queryByRole('menu')).not.toBeInTheDocument()
     await user.click(trigger)
@@ -341,6 +344,32 @@ describe('RequestsNew', () => {
       expect.objectContaining({ url: 'https://example.com/final' }),
     ])
     expect(request.links).toEqual(request.improvements[0].links)
+  })
+
+  test('cancels adding a website link and discards the draft', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter>
+        <RequestsNew />
+      </MemoryRouter>,
+    )
+
+    const trigger = screen.getByRole('button', { name: /add attachment/i })
+    await user.click(trigger)
+    await user.click(screen.getByRole('menuitem', { name: /add website link/i }))
+    await user.type(screen.getByLabelText('Website Link 1'), 'unfinished-link')
+    await user.click(screen.getByRole('button', { name: 'Add Link' }))
+    expect(screen.getByText(/beginning with http/i)).toBeInTheDocument()
+
+    await user.click(within(screen.getByLabelText('Website Link 1').closest('.requests-new-link-editor'))
+      .getByRole('button', { name: 'Cancel' }))
+    expect(screen.queryByLabelText('Website Link 1')).not.toBeInTheDocument()
+    expect(screen.queryByText(/beginning with http/i)).not.toBeInTheDocument()
+
+    await user.click(trigger)
+    await user.click(screen.getByRole('menuitem', { name: /add website link/i }))
+    expect(screen.getByLabelText('Website Link 1')).toHaveValue('')
   })
 
   test('adds and submits multiple improvements with separate files', async () => {
