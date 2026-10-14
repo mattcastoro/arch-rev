@@ -556,7 +556,7 @@ function RequestsNew() {
                 ariaLabel={`Description ${index + 1}`}
                 placeholder="Describe Improvement"
                 id={`description-${id}`}
-                rows={6}
+                rows={3}
                 required
                 invalid={invalidFields.includes(`description-${id}`)}
               />
