@@ -57,6 +57,7 @@ function RequestsNew() {
   const [filePreview, setFilePreview] = useState(null)
   const [attachmentErrors, setAttachmentErrors] = useState({})
   const [duplicateFile, setDuplicateFile] = useState(null)
+  const [desktopCameraPromptId, setDesktopCameraPromptId] = useState(null)
   const [improvementToRemove, setImprovementToRemove] = useState(null)
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false)
   const nextImprovementId = useRef(1)
@@ -139,6 +140,22 @@ function RequestsNew() {
   function showLinkEditor(id) {
     setLinkEditorId(id)
     setAttachmentMenuId(null)
+  }
+
+  function handleTakePhoto(id) {
+    if (window.innerWidth < 768) {
+      openFilePicker(id, 'cameraPhoto')
+      return
+    }
+
+    setAttachmentMenuId(null)
+    setDesktopCameraPromptId(id)
+  }
+
+  function continueWithDesktopPhoto() {
+    const id = desktopCameraPromptId
+    setDesktopCameraPromptId(null)
+    openFilePicker(id, 'cameraPhoto')
   }
 
   function cancelLinkEditor(id) {
@@ -428,7 +445,7 @@ function RequestsNew() {
                         <button type="button" role="menuitem" onClick={() => showLinkEditor(id)}>
                           Add website link
                         </button>
-                        <button type="button" role="menuitem" onClick={() => openFilePicker(id, 'cameraPhoto')}>
+                        <button type="button" role="menuitem" onClick={() => handleTakePhoto(id)}>
                           Take a photo
                         </button>
                       </div>
@@ -654,6 +671,24 @@ function RequestsNew() {
               </Button>
               <Button type="button" variant="primary" size="btn-md" onClick={replaceDuplicateFile}>
                 Replace File
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {desktopCameraPromptId !== null && (
+        <div className="requests-new-modal-backdrop" role="presentation">
+          <div className="requests-new-modal" role="dialog" aria-modal="true" aria-labelledby="desktop-camera-title">
+            <h2 id="desktop-camera-title">Camera Capture</h2>
+            <p>Taking a photo is only available when using this form on a phone. On this device, continuing will let you select an existing file instead.</p>
+            <p>Would you like to continue?</p>
+            <div className="requests-new-modal-actions">
+              <Button type="button" variant="secondary" size="btn-md" onClick={() => setDesktopCameraPromptId(null)}>
+                Cancel
+              </Button>
+              <Button type="button" variant="primary" size="btn-md" onClick={continueWithDesktopPhoto}>
+                Continue
               </Button>
             </div>
           </div>

@@ -298,6 +298,47 @@ describe('RequestsNew', () => {
     await user.click(screen.getByRole('menuitem', { name: /upload from device/i }))
     await user.click(trigger)
     await user.click(screen.getByRole('menuitem', { name: /take a photo/i }))
+    const cameraDialog = screen.getByRole('dialog', { name: /take a photo on your phone/i })
+    expect(within(cameraDialog).getByText(/select an existing image file/i)).toBeInTheDocument()
+    await user.click(within(cameraDialog).getByRole('button', { name: /cancel/i }))
+    expect(screen.queryByRole('dialog', { name: /take a photo on your phone/i })).not.toBeInTheDocument()
+  })
+
+  test('continues to the image picker from the desktop camera notice', async () => {
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter>
+        <RequestsNew />
+      </MemoryRouter>,
+    )
+
+    const cameraInput = screen.getByLabelText('Take Photo 1')
+    const clickSpy = jest.spyOn(cameraInput, 'click')
+    await user.click(screen.getByRole('button', { name: /add attachment/i }))
+    await user.click(screen.getByRole('menuitem', { name: /take a photo/i }))
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /continue/i }))
+    expect(clickSpy).toHaveBeenCalled()
+  })
+
+  test('opens camera capture directly on mobile', async () => {
+    const user = userEvent.setup()
+    const desktopWidth = window.innerWidth
+    window.innerWidth = 375
+
+    render(
+      <MemoryRouter>
+        <RequestsNew />
+      </MemoryRouter>,
+    )
+
+    const cameraInput = screen.getByLabelText('Take Photo 1')
+    const clickSpy = jest.spyOn(cameraInput, 'click')
+    await user.click(screen.getByRole('button', { name: /add attachment/i }))
+    await user.click(screen.getByRole('menuitem', { name: /take a photo/i }))
+    expect(clickSpy).toHaveBeenCalled()
+    expect(screen.queryByRole('dialog', { name: /take a photo on your phone/i })).not.toBeInTheDocument()
+
+    window.innerWidth = desktopWidth
   })
 
   test('adds, persists, and removes website links', async () => {
