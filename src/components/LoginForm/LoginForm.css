@@ -47,12 +47,14 @@
 
   .form-fields {
     flex-direction: row;
+    flex-wrap: wrap;
     gap: 2rem;
     width: 100%;
   }
 
   .form-fields > * {
-    flex: 1;
+    min-width: 0;
+    flex: 1 1 18rem;
   }
 
   .form-actions {
