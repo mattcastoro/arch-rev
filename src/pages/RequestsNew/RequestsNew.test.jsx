@@ -420,6 +420,40 @@ describe('RequestsNew', () => {
     expect(screen.getByLabelText('Link Description 1')).toHaveAttribute('maxlength', '100')
   })
 
+  test('edits an existing website link', async () => {
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter>
+        <RequestsNew />
+      </MemoryRouter>,
+    )
+
+    await user.click(screen.getByRole('button', { name: /add attachment/i }))
+    await user.click(screen.getByRole('menuitem', { name: /add website link/i }))
+    await user.type(screen.getByLabelText('Website Link 1'), 'https://example.com/old')
+    await user.type(screen.getByLabelText('Link Description 1'), 'Old plans')
+    await user.click(screen.getByRole('button', { name: 'Add Link' }))
+
+    await user.click(screen.getByRole('button', { name: 'Edit https://example.com/old' }))
+    expect(screen.getByLabelText('Website Link 1')).toHaveValue('https://example.com/old')
+    expect(screen.getByLabelText('Link Description 1')).toHaveValue('Old plans')
+    expect(screen.queryByRole('link', { name: 'Old plans' })).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Website Link 1').closest('li')).toHaveClass(
+      'requests-new-link-edit-row',
+    )
+    await user.clear(screen.getByLabelText('Website Link 1'))
+    await user.type(screen.getByLabelText('Website Link 1'), 'https://example.com/new')
+    await user.clear(screen.getByLabelText('Link Description 1'))
+    await user.type(screen.getByLabelText('Link Description 1'), 'Updated plans')
+    await user.click(screen.getByRole('button', { name: 'Save Link' }))
+
+    expect(screen.getByRole('link', { name: 'Updated plans' })).toHaveAttribute(
+      'href',
+      'https://example.com/new',
+    )
+    expect(screen.queryByRole('link', { name: 'Old plans' })).not.toBeInTheDocument()
+  })
+
   test('adds and submits multiple improvements with separate files', async () => {
     const user = userEvent.setup()
 

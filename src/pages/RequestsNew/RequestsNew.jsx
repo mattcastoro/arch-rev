@@ -55,6 +55,7 @@ function RequestsNew() {
   const [linkEditorId, setLinkEditorId] = useState(null)
   const [linkDrafts, setLinkDrafts] = useState({})
   const [linkDescriptionDrafts, setLinkDescriptionDrafts] = useState({})
+  const [editingLink, setEditingLink] = useState(null)
   const [filePreview, setFilePreview] = useState(null)
   const [attachmentErrors, setAttachmentErrors] = useState({})
   const [duplicateFile, setDuplicateFile] = useState(null)
@@ -139,6 +140,7 @@ function RequestsNew() {
   }
 
   function showLinkEditor(id) {
+    setEditingLink(null)
     setLinkEditorId(id)
     setAttachmentMenuId(null)
   }
@@ -163,6 +165,7 @@ function RequestsNew() {
     setLinkDrafts((current) => ({ ...current, [id]: '' }))
     setLinkDescriptionDrafts((current) => ({ ...current, [id]: '' }))
     setLinkEditorId(null)
+    setEditingLink(null)
     setAlertMessage('')
     setAttachmentErrors((current) => ({ ...current, [id]: '' }))
   }
@@ -176,20 +179,44 @@ function RequestsNew() {
     }
 
     const improvement = improvements.find((item) => item.id === id)
-    if (improvement.links.some((link) => link.url.toLowerCase() === url.toLowerCase())) {
+    if (improvement.links.some((link, index) => (
+      link.url.toLowerCase() === url.toLowerCase() && index !== editingLink?.linkIndex
+    ))) {
       setAttachmentErrors((current) => ({ ...current, [id]: 'This website link has already been added.' }))
       return
     }
 
-    setImprovements((current) => current.map((improvement) => (
-      improvement.id === id
-        ? { ...improvement, links: [...improvement.links, { url, description, addedAt: new Date() }] }
-        : improvement
-    )))
+    setImprovements((current) => current.map((currentImprovement) => {
+      if (currentImprovement.id !== id) return currentImprovement
+
+      if (editingLink) {
+        const links = [...currentImprovement.links]
+        links[editingLink.linkIndex] = {
+          ...links[editingLink.linkIndex],
+          url,
+          description,
+        }
+        return { ...currentImprovement, links }
+      }
+
+      return {
+        ...currentImprovement,
+        links: [...currentImprovement.links, { url, description, addedAt: new Date() }],
+      }
+    }))
     setLinkDrafts((current) => ({ ...current, [id]: '' }))
     setLinkDescriptionDrafts((current) => ({ ...current, [id]: '' }))
     setLinkEditorId(null)
+    setEditingLink(null)
     setAlertMessage('')
+    setAttachmentErrors((current) => ({ ...current, [id]: '' }))
+  }
+
+  function editLink(id, linkIndex, link) {
+    setLinkDrafts((current) => ({ ...current, [id]: link.url }))
+    setLinkDescriptionDrafts((current) => ({ ...current, [id]: link.description || '' }))
+    setEditingLink({ id, linkIndex })
+    setLinkEditorId(id)
     setAttachmentErrors((current) => ({ ...current, [id]: '' }))
   }
 
@@ -377,6 +404,42 @@ function RequestsNew() {
     navigate('/home')
   }
 
+  function renderLinkEditor(id, improvementIndex) {
+    return (
+      <div className="requests-new-link-editor">
+        <input
+          type="url"
+          aria-label={`Website Link ${improvementIndex + 1}`}
+          placeholder="https://example.com"
+          value={linkDrafts[id] || ''}
+          onChange={(event) => setLinkDrafts((current) => ({
+            ...current,
+            [id]: event.target.value,
+          }))}
+        />
+        <input
+          type="text"
+          aria-label={`Link Description ${improvementIndex + 1}`}
+          placeholder="Description (optional)"
+          maxLength={100}
+          value={linkDescriptionDrafts[id] || ''}
+          onChange={(event) => setLinkDescriptionDrafts((current) => ({
+            ...current,
+            [id]: event.target.value,
+          }))}
+        />
+        <div className="requests-new-link-editor-actions">
+          <button className="requests-new-link-cancel" type="button" onClick={() => cancelLinkEditor(id)}>
+            Cancel
+          </button>
+          <button className="requests-new-link-add" type="button" onClick={() => addLink(id)}>
+            {editingLink?.id === id ? 'Save Link' : 'Add Link'}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="requests-new-page">
       <header className="requests-new-header">
@@ -479,47 +542,7 @@ function RequestsNew() {
                   capture="environment"
                   onChange={(event) => handleFilesSelected(event, id)}
                 />
-                {linkEditorId === id && (
-                  <div className="requests-new-link-editor">
-                    <input
-                      type="url"
-                      aria-label={`Website Link ${index + 1}`}
-                      placeholder="https://example.com"
-                      value={linkDrafts[id] || ''}
-                      onChange={(event) => setLinkDrafts((current) => ({
-                        ...current,
-                        [id]: event.target.value,
-                      }))}
-                    />
-                    <input
-                      type="text"
-                      aria-label={`Link Description ${index + 1}`}
-                      placeholder="Description (optional)"
-                      maxLength={100}
-                      value={linkDescriptionDrafts[id] || ''}
-                      onChange={(event) => setLinkDescriptionDrafts((current) => ({
-                        ...current,
-                        [id]: event.target.value,
-                      }))}
-                    />
-                    <div className="requests-new-link-editor-actions">
-                      <button
-                        className="requests-new-link-cancel"
-                        type="button"
-                        onClick={() => cancelLinkEditor(id)}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        className="requests-new-link-add"
-                        type="button"
-                        onClick={() => addLink(id)}
-                      >
-                        Add Link
-                      </button>
-                    </div>
-                  </div>
-                )}
+                {linkEditorId === id && !editingLink && renderLinkEditor(id, index)}
                 {attachmentErrors[id] && (
                   <div className="requests-new-attachment-error" role="alert">
                     <span>{attachmentErrors[id]}</span>
@@ -570,7 +593,7 @@ function RequestsNew() {
                           aria-label={`Remove ${file.name}`}
                           onClick={() => removeFile(id, fileIndex)}
                         >
-                          ×
+                          <span aria-hidden="true">🗑</span>
                         </button>
                       </li>
                     ))}
@@ -579,6 +602,11 @@ function RequestsNew() {
                 {links.length > 0 && (
                   <ul className="requests-new-file-list" aria-label={`Added links ${index + 1}`}>
                     {links.map(({ url, description, addedAt }, linkIndex) => (
+                      editingLink?.id === id && editingLink.linkIndex === linkIndex ? (
+                        <li className="requests-new-link-edit-row" key={`${url}-${linkIndex}`}>
+                          {renderLinkEditor(id, index)}
+                        </li>
+                      ) : (
                       <li className="requests-new-file" key={`${url}-${linkIndex}`}>
                         <span className="requests-new-file-information">
                           <a className="requests-new-file-name" href={url} target="_blank" rel="noreferrer">
@@ -586,8 +614,21 @@ function RequestsNew() {
                           </a>
                           <span className="requests-new-file-details">{uploadDateFormatter.format(addedAt)}</span>
                         </span>
-                        <button className="requests-new-file-remove" type="button" aria-label={`Remove ${url}`} onClick={() => removeLink(id, linkIndex)}>×</button>
+                        <span className="requests-new-link-actions">
+                          <button
+                            className="requests-new-link-edit"
+                            type="button"
+                            aria-label={`Edit ${url}`}
+                            onClick={() => editLink(id, linkIndex, { url, description })}
+                          >
+                            <span aria-hidden="true">✎</span>
+                          </button>
+                          <button className="requests-new-file-remove" type="button" aria-label={`Remove ${url}`} onClick={() => removeLink(id, linkIndex)}>
+                            <span aria-hidden="true">🗑</span>
+                          </button>
+                        </span>
                       </li>
+                      )
                     ))}
                   </ul>
                 )}
