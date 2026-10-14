@@ -162,6 +162,52 @@ describe('RequestsNew', () => {
     ])
   })
 
+  test('adds desktop files through the drag-and-drop zone', () => {
+    render(
+      <MemoryRouter>
+        <RequestsNew />
+      </MemoryRouter>,
+    )
+
+    const dropZone = screen.getByRole('button', { name: /drag and drop files here/i })
+    const file = new File(['plans'], 'dropped-plans.pdf', { type: 'application/pdf' })
+    fireEvent.dragEnter(dropZone, { dataTransfer: { files: [file] } })
+    const dragData = { files: [file], dropEffect: 'none' }
+    fireEvent.dragOver(dropZone, { dataTransfer: dragData })
+    expect(dragData.dropEffect).toBe('copy')
+    expect(dropZone).toHaveClass('requests-new-drop-zone--active')
+
+    fireEvent.drop(dropZone, { dataTransfer: { files: [file] } })
+    expect(dropZone).not.toHaveClass('requests-new-drop-zone--active')
+    expect(screen.getByRole('button', { name: 'dropped-plans.pdf' })).toBeInTheDocument()
+
+    fireEvent.dragEnter(dropZone, { dataTransfer: { files: [file] } })
+    fireEvent.dragLeave(dropZone)
+    expect(dropZone).not.toHaveClass('requests-new-drop-zone--active')
+
+    fireEvent.dragEnter(dropZone, { dataTransfer: { files: [file] } })
+    fireEvent.dragEnter(dropZone, { dataTransfer: { files: [file] } })
+    fireEvent.dragLeave(dropZone)
+    expect(dropZone).toHaveClass('requests-new-drop-zone--active')
+    fireEvent.dragLeave(dropZone)
+    expect(dropZone).not.toHaveClass('requests-new-drop-zone--active')
+  })
+
+  test('prevents native browser file drops outside the drop zone', () => {
+    render(
+      <MemoryRouter>
+        <RequestsNew />
+      </MemoryRouter>,
+    )
+
+    const file = new File(['plans'], 'outside.pdf', { type: 'application/pdf' })
+    const dragData = { files: [file], dropEffect: 'copy' }
+    expect(fireEvent.dragOver(document.body, { dataTransfer: dragData })).toBe(false)
+    expect(dragData.dropEffect).toBe('none')
+    expect(fireEvent.drop(document.body, { dataTransfer: dragData })).toBe(false)
+    expect(screen.queryByRole('button', { name: 'outside.pdf' })).not.toBeInTheDocument()
+  })
+
   test('removes a previously selected file before submission', async () => {
     const user = userEvent.setup()
 

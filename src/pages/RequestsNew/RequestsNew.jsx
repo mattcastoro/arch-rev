@@ -78,11 +78,13 @@ function RequestsNew() {
   const [desktopCameraPromptId, setDesktopCameraPromptId] = useState(null)
   const [fileToRemove, setFileToRemove] = useState(null)
   const [linkToRemove, setLinkToRemove] = useState(null)
+  const [draggingImprovementId, setDraggingImprovementId] = useState(null)
   const [improvementToRemove, setImprovementToRemove] = useState(null)
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false)
   const nextImprovementId = useRef(1)
   const uploadTimers = useRef(new Map())
   const previewUrl = useRef(null)
+  const dragDepth = useRef(new Map())
 
   useEffect(() => () => {
     uploadTimers.current.forEach((timer) => clearTimeout(timer))
@@ -102,6 +104,20 @@ function RequestsNew() {
 
     return () => document.removeEventListener('mousedown', closeAttachmentMenuOnOutsideClick)
   }, [attachmentMenuId])
+
+  useEffect(() => {
+    function preventNativeFileDrop(event) {
+      event.preventDefault()
+      if (event.dataTransfer) event.dataTransfer.dropEffect = 'none'
+    }
+
+    document.addEventListener('dragover', preventNativeFileDrop)
+    document.addEventListener('drop', preventNativeFileDrop)
+    return () => {
+      document.removeEventListener('dragover', preventNativeFileDrop)
+      document.removeEventListener('drop', preventNativeFileDrop)
+    }
+  }, [])
 
   function openFilePreview(file) {
     if (previewUrl.current) URL.revokeObjectURL(previewUrl.current)
@@ -255,10 +271,10 @@ function RequestsNew() {
     setLinkToRemove(null)
   }
 
-  function handleFilesSelected(event, id) {
+  function addFiles(fileList, id) {
     const uploadedAt = new Date()
     const improvement = improvements.find((item) => item.id === id)
-    const selectedFiles = Array.from(event.currentTarget.files)
+    const selectedFiles = Array.from(fileList)
     const validFiles = selectedFiles.filter((file) => {
       const error = getFileValidationError(file)
       if (error) setAttachmentErrors((current) => ({ ...current, [id]: error }))
@@ -284,8 +300,6 @@ function RequestsNew() {
         ? { ...improvement, files: [...improvement.files, ...newFiles] }
         : improvement
     )))
-    event.currentTarget.value = ''
-
     if (!newFiles.length) return
     if (validFiles.length === selectedFiles.length && validFiles.length <= availableSlots) {
       setAttachmentErrors((current) => ({ ...current, [id]: '' }))
@@ -305,6 +319,40 @@ function RequestsNew() {
       uploadTimers.current.delete(id)
     }, 700)
     uploadTimers.current.set(id, timer)
+  }
+
+  function handleFilesSelected(event, id) {
+    addFiles(event.currentTarget.files, id)
+    event.currentTarget.value = ''
+  }
+
+  function handleFilesDropped(event, id) {
+    event.preventDefault()
+    event.stopPropagation()
+    dragDepth.current.delete(id)
+    setDraggingImprovementId(null)
+    addFiles(event.dataTransfer.files, id)
+  }
+
+  function handleDropZoneDragEnter(event, id) {
+    event.preventDefault()
+    event.stopPropagation()
+    const nextDepth = (dragDepth.current.get(id) || 0) + 1
+    dragDepth.current.set(id, nextDepth)
+    setDraggingImprovementId(id)
+  }
+
+  function handleDropZoneDragLeave(event, id) {
+    event.preventDefault()
+    event.stopPropagation()
+    const nextDepth = (dragDepth.current.get(id) || 1) - 1
+    if (nextDepth > 0) {
+      dragDepth.current.set(id, nextDepth)
+      return
+    }
+
+    dragDepth.current.delete(id)
+    setDraggingImprovementId(null)
   }
 
   function replaceDuplicateFile() {
@@ -562,6 +610,23 @@ function RequestsNew() {
                   capture="environment"
                   onChange={(event) => handleFilesSelected(event, id)}
                 />
+                <button
+                  className={`requests-new-drop-zone${draggingImprovementId === id ? ' requests-new-drop-zone--active' : ''}`}
+                  type="button"
+                  onClick={() => openFilePicker(id, 'supportingDocs')}
+                  onDragEnter={(event) => handleDropZoneDragEnter(event, id)}
+                  onDragOver={(event) => {
+                    event.preventDefault()
+                    event.stopPropagation()
+                    event.dataTransfer.dropEffect = 'copy'
+                    setDraggingImprovementId(id)
+                  }}
+                  onDragLeave={(event) => handleDropZoneDragLeave(event, id)}
+                  onDrop={(event) => handleFilesDropped(event, id)}
+                >
+                  <span className="requests-new-drop-zone-title">Drag and drop files here</span>
+                  <span>or click to browse</span>
+                </button>
                 {linkEditorId === id && !editingLink && renderLinkEditor(id, index)}
                 {attachmentErrors[id] && (
                   <div className="requests-new-attachment-error" role="alert">
