@@ -8,12 +8,14 @@ function Button({
   size = "btn-md",
   fullWidth = false,
   className="",
+  autoFocus = false,
 }) {
 
   return (
     <button
       type={type}
       onClick={onClick}
+      autoFocus={autoFocus}
       className={`
         btn
         ${variant}
