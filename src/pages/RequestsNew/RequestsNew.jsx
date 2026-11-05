@@ -862,7 +862,14 @@ function RequestsNew() {
             {!noVisibleNeighbors && neighbors.map((neighbor, index) => (
               <fieldset className="requests-new-neighbor" key={neighbor.id}>
                 <legend>Neighbor {index + 1}</legend>
-                <button type="button" onClick={() => removeNeighbor(neighbor.id)} aria-label={`Remove neighbor ${index + 1}`}>Remove</button>
+                <button
+                  className="requests-new-improvement-remove requests-new-neighbor-remove"
+                  type="button"
+                  onClick={() => removeNeighbor(neighbor.id)}
+                  aria-label={`Remove neighbor ${index + 1}`}
+                >
+                  x
+                </button>
                 <label>
                   Full name
                   <input

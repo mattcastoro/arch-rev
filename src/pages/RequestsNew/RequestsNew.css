@@ -98,14 +98,10 @@
   font-weight: 600;
 }
 
-.requests-new-neighbor > button {
+.requests-new-neighbor > .requests-new-neighbor-remove {
   position: absolute;
-  top: -1.75rem;
-  right: 0;
-  border: 0;
-  background: transparent;
-  color: var(--error);
-  cursor: pointer;
+  top: 0.5rem;
+  right: 0.5rem;
 }
 
 .requests-new-neighbor label {

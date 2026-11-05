@@ -85,6 +85,12 @@ describe('App routes', () => {
     expect(screen.getByRole('list', { name: /request progress/i })).toHaveTextContent('1Request details2Neighbors3Review')
     expect(screen.getByText('Neighbors', { selector: '[aria-current="step"]' })).toBeInTheDocument()
 
+    await user.click(screen.getByRole('button', { name: /add neighbor/i }))
+    const removeNeighborButton = screen.getByRole('button', { name: /remove neighbor 1/i })
+    expect(removeNeighborButton).toHaveTextContent(/^x$/i)
+    expect(removeNeighborButton).toHaveClass('requests-new-improvement-remove')
+    await user.click(removeNeighborButton)
+
     await user.click(screen.getByRole('checkbox', { name: /no neighboring property can view/i }))
     await user.click(screen.getByRole('button', { name: /next: review request/i }))
     expect(screen.getByRole('heading', { name: /review request/i })).toBeInTheDocument()

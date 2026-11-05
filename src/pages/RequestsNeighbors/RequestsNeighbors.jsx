@@ -114,7 +114,14 @@ function RequestsNeighbors() {
           {!noVisibleNeighbors && neighbors.map((neighbor, index) => (
             <fieldset className="requests-new-neighbor" key={neighbor.id}>
               <legend>Neighbor {index + 1}</legend>
-              <button type="button" onClick={() => removeNeighbor(neighbor.id)} aria-label={`Remove neighbor ${index + 1}`}>Remove</button>
+              <button
+                className="requests-new-improvement-remove requests-new-neighbor-remove"
+                type="button"
+                onClick={() => removeNeighbor(neighbor.id)}
+                aria-label={`Remove neighbor ${index + 1}`}
+              >
+                x
+              </button>
               <label>Full name<input value={neighbor.fullName} aria-invalid={errors[`${neighbor.id}-fullName`] || undefined} onChange={(event) => updateNeighbor(neighbor.id, 'fullName', event.target.value)} /></label>
               <label>Street address<input value={neighbor.streetAddress} aria-invalid={errors[`${neighbor.id}-streetAddress`] || undefined} onChange={(event) => updateNeighbor(neighbor.id, 'streetAddress', event.target.value)} /></label>
               <label>Email address<input type="email" value={neighbor.email} aria-invalid={errors[`${neighbor.id}-email`] || undefined} onChange={(event) => updateNeighbor(neighbor.id, 'email', event.target.value)} /></label>
