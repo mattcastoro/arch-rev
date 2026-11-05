@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import App from './App'
 import { storageKeys } from './lib/localData'
@@ -64,5 +65,43 @@ describe('App routes', () => {
     }))
     renderAt('/requests/new')
     expect(screen.getByRole('heading', { name: /create new request/i })).toBeInTheDocument()
+  })
+
+  test('moves the request draft to a separate neighbor page and preserves details', async () => {
+    const user = userEvent.setup()
+    localStorage.setItem(storageKeys.SESSION_KEY, JSON.stringify({
+      email: 'person@example.com',
+      isAuthenticated: true,
+      loginAt: 'now',
+    }))
+    renderAt('/requests/new')
+
+    await user.selectOptions(screen.getByLabelText('Improvement Type 1*'), 'Painting')
+    await user.type(screen.getByLabelText('Description 1*'), 'Paint the exterior')
+    await user.click(screen.getByRole('button', { name: /next: add neighbors/i }))
+
+    expect(screen.getByRole('heading', { name: /neighbor acknowledgments/i })).toBeInTheDocument()
+    expect(screen.queryByLabelText('Description 1*')).not.toBeInTheDocument()
+    expect(screen.getByRole('list', { name: /request progress/i })).toHaveTextContent('1Request details2Neighbors3Review')
+    expect(screen.getByText('Neighbors', { selector: '[aria-current="step"]' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('checkbox', { name: /no neighboring property can view/i }))
+    await user.click(screen.getByRole('button', { name: /next: review request/i }))
+    expect(screen.getByRole('heading', { name: /review request/i })).toBeInTheDocument()
+    expect(screen.getByText('Review', { selector: '[aria-current="step"]' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /^back$/i }))
+    await user.click(screen.getByRole('button', { name: /^back$/i }))
+    expect(screen.getByRole('heading', { name: /create new request/i })).toBeInTheDocument()
+    expect(screen.getByLabelText('Description 1*')).toHaveValue('Paint the exterior')
+  })
+
+  test('protects the neighbor and review request routes', async () => {
+    const { unmount } = renderAt('/requests/new/neighbors')
+    expect(await screen.findByRole('button', { name: /log in/i })).toBeInTheDocument()
+    unmount()
+
+    renderAt('/requests/new/review')
+    expect(await screen.findByRole('button', { name: /log in/i })).toBeInTheDocument()
   })
 })

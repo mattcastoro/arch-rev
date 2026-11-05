@@ -129,7 +129,7 @@ This file records durable architectural decisions for the Architectural Review a
 
 **Context:** Neighbors who can view a proposed project must acknowledge the current request before it is finalized, but pending acknowledgments should not prevent committee review or approval.
 
-**Decision:** Track committee status, neighbor-acknowledgment status, and overall request status independently. A request begins at revision 1. The committee may review and approve while acknowledgments are pending, but the request is finalized only when committee approval and every required acknowledgment apply to the current revision. Homeowners may attest that no neighboring property can view the project. Future request edits invalidate decisions and acknowledgments tied to the prior revision. Neighbor removal requires a homeowner-provided reason retained in request history.
+**Decision:** Track committee status, neighbor-acknowledgment status, and overall request status independently. Request details, neighbor acknowledgments, and final review use separate routes within one draft workflow. A request begins at revision 1. The committee may review and approve while acknowledgments are pending, but the request is finalized only when committee approval and every required acknowledgment apply to the current revision. Homeowners may attest that no neighboring property can view the project. Future request edits invalidate decisions and acknowledgments tied to the prior revision. Neighbor removal requires a homeowner-provided reason retained in request history.
 
 **Rationale:** Separate statuses accurately represent work that can proceed in parallel while preserving the requirement that all parties act on the same request content.
 

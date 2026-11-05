@@ -1,6 +1,6 @@
 import '../../App.css'
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import Alert from '../../components/Alert/Alert'
 import Button from '../../components/Button/Button'
 import FormField from '../../components/FormField/FormField'
@@ -64,10 +64,14 @@ function PencilIcon() {
 
 function RequestsNew() {
   const navigate = useNavigate()
-  const [step, setStep] = useState(1)
+  const location = useLocation()
+  const routeStep = location.pathname.endsWith('/review') ? 3 : location.pathname.endsWith('/neighbors') ? 2 : 1
+  const [step, setStep] = useState(routeStep)
   const [alertMessage, setAlertMessage] = useState('')
   const [invalidFields, setInvalidFields] = useState([])
-  const [improvements, setImprovements] = useState([{ id: 0, files: [], links: [] }])
+  const [improvements, setImprovements] = useState(
+    location.state?.draftImprovements ?? [{ id: 0, files: [], links: [] }],
+  )
   const [attachmentMenuId, setAttachmentMenuId] = useState(null)
   const [linkEditorId, setLinkEditorId] = useState(null)
   const [linkDrafts, setLinkDrafts] = useState({})
@@ -95,6 +99,10 @@ function RequestsNew() {
     uploadTimers.current.forEach((timer) => clearTimeout(timer))
     if (previewUrl.current) URL.revokeObjectURL(previewUrl.current)
   }, [])
+
+  useEffect(() => {
+    setStep(routeStep)
+  }, [routeStep])
 
   useEffect(() => {
     function closeAttachmentMenuOnOutsideClick(event) {
@@ -459,8 +467,18 @@ function RequestsNew() {
   function continueToNeighbors(event) {
     const form = event.currentTarget.form
     if (!validateImprovements(form)) return
+    const draftImprovements = improvements.map((improvement) => ({
+      ...improvement,
+      ...getImprovementValues(form, improvement),
+    }))
     setAlertMessage('')
     setStep(2)
+    navigate('/requests/new/neighbors', {
+      state: {
+        draftImprovements,
+        requestImprovements: getRequestImprovements(form),
+      },
+    })
   }
 
   function addNeighbor() {
@@ -512,6 +530,7 @@ function RequestsNew() {
     setReviewImprovements(getRequestImprovements(event.currentTarget.form))
     setAlertMessage('')
     setStep(3)
+    navigate('/requests/new/review')
   }
 
   function handleSubmit(event) {
@@ -584,7 +603,7 @@ function RequestsNew() {
   return (
     <div className="requests-new-page">
       <header className="requests-new-header">
-        <h1>Create New Request</h1>
+        <h1>{step === 1 ? 'Create New Request' : step === 2 ? 'Neighbor Acknowledgments' : 'Review Request'}</h1>
         <p>Step {step} of 3 · {step === 1 ? 'Request details' : step === 2 ? 'Neighbor acknowledgment' : 'Review and submit'}</p>
       </header>
 
@@ -628,6 +647,7 @@ function RequestsNew() {
                   options={improvementOptions}
                   required
                   invalid={invalidFields.includes(`improvementType-${id}`)}
+                  defaultValue={improvement.improvementType}
                 />
               </div>
 
@@ -640,6 +660,7 @@ function RequestsNew() {
                 rows={3}
                 required
                 invalid={invalidFields.includes(`description-${id}`)}
+                defaultValue={improvement.description}
               />
 
               <div className="field requests-new-upload">
@@ -891,14 +912,14 @@ function RequestsNew() {
                   <small>{improvement.files.length} file(s) · {improvement.links.length} link(s)</small>
                 </article>
               ))}
-              <Button type="button" variant="secondary" size="btn-sm" onClick={() => setStep(1)}>Edit Request Details</Button>
+              <Button type="button" variant="secondary" size="btn-sm" onClick={() => { setStep(1); navigate('/requests/new') }}>Edit Request Details</Button>
             </div>
             <div>
               <h3>Neighbors</h3>
               {noVisibleNeighbors ? <p>No neighboring property can view this project.</p> : (
                 <ul>{neighbors.map((neighbor) => <li key={neighbor.id}>{neighbor.fullName} · {neighbor.streetAddress} · {neighbor.email}</li>)}</ul>
               )}
-              <Button type="button" variant="secondary" size="btn-sm" onClick={() => setStep(2)}>Edit Neighbors</Button>
+              <Button type="button" variant="secondary" size="btn-sm" onClick={() => { setStep(2); navigate('/requests/new/neighbors') }}>Edit Neighbors</Button>
             </div>
           </section>
         )}
@@ -907,7 +928,8 @@ function RequestsNew() {
           <Button type="button" variant="secondary" size="btn-md" onClick={handleCancelRequest}>
             Cancel
           </Button>
-          {step > 1 && <Button type="button" variant="secondary" size="btn-md" onClick={() => setStep(step - 1)}>Back</Button>}
+          {step === 2 && <Button type="button" variant="secondary" size="btn-md" onClick={() => { setStep(1); navigate('/requests/new') }}>Back</Button>}
+          {step === 3 && <Button type="button" variant="secondary" size="btn-md" onClick={() => { setStep(2); navigate('/requests/new/neighbors') }}>Back</Button>}
           {step === 1 && <Button type="button" variant="primary" size="btn-md" onClick={continueToNeighbors}>Next: Add Neighbors</Button>}
           {step === 2 && <Button type="button" variant="primary" size="btn-md" onClick={continueToReview}>Next: Review Request</Button>}
           {step === 3 && <Button type="submit" variant="primary" size="btn-md">Submit Request</Button>}

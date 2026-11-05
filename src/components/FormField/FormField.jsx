@@ -13,6 +13,7 @@ function FormField({
   options = [],
   rows = 4,
   invalid = false,
+  defaultValue = '',
 }) {
   const fieldPlaceholder = `${placeholder || label}${required ? ' *' : ''}`
   const accessibleLabel = required ? `${ariaLabel}*` : ariaLabel
@@ -29,6 +30,7 @@ function FormField({
           placeholder={fieldPlaceholder}
           required={required}
           rows={rows}
+          defaultValue={defaultValue}
         />
       ) : null}
       {as === 'select' ? (
@@ -39,7 +41,7 @@ function FormField({
           aria-invalid={invalid || undefined}
           className={invalid ? 'field__control--invalid' : undefined}
           required={required}
-          defaultValue=""
+          defaultValue={defaultValue}
         >
           <option value="" disabled>{fieldPlaceholder}</option>
           {options.map((option) => (
@@ -57,6 +59,7 @@ function FormField({
           className={invalid ? 'field__control--invalid' : undefined}
           placeholder={fieldPlaceholder}
           required={required}
+          defaultValue={defaultValue}
         />
       ) : null}
     </div>

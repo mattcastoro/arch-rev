@@ -6,6 +6,7 @@ import Home from "./pages/Home/Home"
 import ForgotPassword from './pages/ForgotPassword/ForgotPassword'
 import ResetPassword from './pages/ResetPassword/ResetPassword'
 import RequestsNew from './pages/RequestsNew/RequestsNew'
+import RequestsNeighbors from './pages/RequestsNeighbors/RequestsNeighbors'
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'
 
 function App() {
@@ -31,6 +32,22 @@ function App() {
           element={(
             <ProtectedRoute>
               <RequestsNew />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/requests/new/neighbors"
+          element={(
+            <ProtectedRoute>
+              <RequestsNeighbors />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/requests/new/review"
+          element={(
+            <ProtectedRoute>
+              <RequestsNeighbors />
             </ProtectedRoute>
           )}
         />
