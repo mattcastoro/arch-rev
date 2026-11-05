@@ -101,6 +101,7 @@ function RequestsNeighbors() {
           <p>Acknowledgment confirms review, not approval.</p>
           <label className="requests-new-attestation">
             <input
+            className="checkbox-field"
               type="checkbox"
               checked={noVisibleNeighbors}
               onChange={(event) => {

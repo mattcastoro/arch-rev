@@ -12,6 +12,12 @@
   }
 }
 
+.checkbox-field {
+  width: auto;
+  padding: 0;
+  margin-right: 0.5rem;
+}
+
 input, textarea, select {
   width: 100%;
   padding: 0.5rem 0.75rem;
