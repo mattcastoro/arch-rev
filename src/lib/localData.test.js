@@ -105,7 +105,7 @@ describe('localData', () => {
 
     const ownerRequests = getRequestsByOwner('PERSON@example.com')
     expect(ownerRequests).toHaveLength(1)
-    expect(ownerRequests[0].status).toBe('Submitted')
+    expect(ownerRequests[0].status).toBe('In progress')
     expect(ownerRequests[0].improvements).toEqual([
       expect.objectContaining({ improvementType: 'Paint', description: 'Paint house' }),
     ])
@@ -125,6 +125,44 @@ describe('localData', () => {
     expect(request.improvementType).toBe('Painting')
     expect(request.description).toBe('Paint house')
     expect(request.files).toEqual([])
+    expect(request.revision).toBe(1)
+    expect(request.committeeStatus).toBe('Not reviewed')
+    expect(request.neighborAcknowledgmentStatus).toBe('Pending')
+  })
+
+  test('request helpers initialize optional neighbor acknowledgments', () => {
+    const request = createRequest({
+      ownerEmail: 'person@example.com',
+      improvements: [{ improvementType: 'Painting', description: 'Paint house', files: [] }],
+      noVisibleNeighbors: true,
+    })
+
+    expect(request.neighbors).toEqual([])
+    expect(request.noVisibleNeighbors).toBe(true)
+    expect(request.neighborAcknowledgmentStatus).toBe('Not required')
+  })
+
+  test('request helpers initialize pending neighbors with normalized emails', () => {
+    const request = createRequest({
+      ownerEmail: 'person@example.com',
+      improvements: [{ improvementType: 'Painting', description: 'Paint house', files: [] }],
+      neighbors: [{
+        id: 'neighbor-1',
+        fullName: 'Jordan Smith',
+        streetAddress: '12 Oak St',
+        email: 'JORDAN@example.com',
+      }],
+    })
+
+    expect(request.neighbors).toEqual([
+      expect.objectContaining({
+        id: 'neighbor-1',
+        email: 'jordan@example.com',
+        status: 'pending',
+        acknowledgedAt: null,
+        removalReason: null,
+      }),
+    ])
   })
 
   test('password reset code flow validates and updates password', () => {

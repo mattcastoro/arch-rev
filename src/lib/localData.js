@@ -112,6 +112,20 @@ export function createRequest(requestInput) {
     links: requestInput.links,
   }]
   const firstImprovement = improvements[0]
+  const neighbors = (requestInput.neighbors ?? []).map((neighbor, index) => ({
+    id: neighbor.id ?? `neighbor_${Date.now()}_${index}`,
+    fullName: neighbor.fullName,
+    streetAddress: neighbor.streetAddress,
+    email: neighbor.email.toLowerCase(),
+    status: 'pending',
+    invitedAt: new Date().toISOString(),
+    acknowledgedAt: null,
+    acknowledgedName: null,
+    acknowledgedRevision: null,
+    removedAt: null,
+    removalReason: null,
+  }))
+  const neighborAcknowledgmentStatus = requestInput.noVisibleNeighbors ? 'Not required' : 'Pending'
   const request = {
     id: `req_${Date.now()}`,
     ownerEmail: requestInput.ownerEmail.toLowerCase(),
@@ -120,7 +134,12 @@ export function createRequest(requestInput) {
     description: firstImprovement.description,
     files: firstImprovement.files,
     links: firstImprovement.links ?? [],
-    status: 'Submitted',
+    revision: 1,
+    neighbors,
+    noVisibleNeighbors: Boolean(requestInput.noVisibleNeighbors),
+    neighborAcknowledgmentStatus,
+    committeeStatus: 'Not reviewed',
+    status: 'In progress',
     createdAt: new Date().toISOString(),
   }
 

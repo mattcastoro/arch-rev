@@ -122,6 +122,21 @@ This file records durable architectural decisions for the Architectural Review a
 
 **Consequences:** Code reading request data should prefer `improvements` while tolerating the legacy shape where needed. The duplicated fields can diverge if updates are not centralized. Actual file upload and retrieval require backend storage and a documented schema migration.
 
+### ADR-010: Independent Committee and Neighbor Completion
+
+**Status:** Accepted
+**Date:** 2026-11-05
+
+**Context:** Neighbors who can view a proposed project must acknowledge the current request before it is finalized, but pending acknowledgments should not prevent committee review or approval.
+
+**Decision:** Track committee status, neighbor-acknowledgment status, and overall request status independently. A request begins at revision 1. The committee may review and approve while acknowledgments are pending, but the request is finalized only when committee approval and every required acknowledgment apply to the current revision. Homeowners may attest that no neighboring property can view the project. Future request edits invalidate decisions and acknowledgments tied to the prior revision. Neighbor removal requires a homeowner-provided reason retained in request history.
+
+**Rationale:** Separate statuses accurately represent work that can proceed in parallel while preserving the requirement that all parties act on the same request content.
+
+**Consequences:** Request screens must not present committee approval alone as final approval. Production invitation links, email delivery, revision invalidation, acknowledgment history, and removal auditing require trusted backend persistence; browser-local prototype data is not a security boundary.
+
+**Related:** ADR-005, ADR-009
+
 ## Decisions to Confirm
 
 The following topics are intentionally **not yet established decisions**. Inspect the current code and agree on a direction before recording them as accepted ADRs.
@@ -173,5 +188,6 @@ Optional links to earlier decisions or relevant documentation.
 | ADR-007 | Local UI state and form handling | Established current pattern |
 | ADR-008 | Styling and responsive design | Established |
 | ADR-009 | Architectural request persistence schema | Established |
+| ADR-010 | Independent committee and neighbor completion | Accepted |
 
 Update this table when new decisions are accepted or superseded.

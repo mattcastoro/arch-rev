@@ -11,6 +11,13 @@ jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
 }))
 
+async function submitWithNoVisibleNeighbors(user) {
+  await user.click(screen.getByRole('button', { name: /next: add neighbors/i }))
+  await user.click(screen.getByRole('checkbox', { name: /no neighboring property can view/i }))
+  await user.click(screen.getByRole('button', { name: /next: review request/i }))
+  await user.click(screen.getByRole('button', { name: /submit request/i }))
+}
+
 describe('RequestsNew', () => {
   beforeEach(() => {
     mockNavigate.mockReset()
@@ -85,7 +92,7 @@ describe('RequestsNew', () => {
       </MemoryRouter>,
     )
 
-    await user.click(screen.getByRole('button', { name: /submit request/i }))
+    await user.click(screen.getByRole('button', { name: /next: add neighbors/i }))
     expect(screen.getByText('Please complete the highlighted fields.')).toBeInTheDocument()
     expect(screen.getByLabelText('Improvement Type 1*')).toHaveAttribute('aria-invalid', 'true')
     expect(screen.getByLabelText('Description 1*')).toHaveAttribute('aria-invalid', 'true')
@@ -106,7 +113,7 @@ describe('RequestsNew', () => {
     const file = new File(['test'], 'quote.pdf', { type: 'application/pdf' })
     await user.upload(screen.getByLabelText('Supporting Documentation 1'), file)
 
-    await user.click(screen.getByRole('button', { name: /submit request/i }))
+    await submitWithNoVisibleNeighbors(user)
 
     const requests = JSON.parse(localStorage.getItem(storageKeys.REQUESTS_KEY))
     expect(requests).toHaveLength(1)
@@ -153,7 +160,7 @@ describe('RequestsNew', () => {
     expect(selectedFiles[1]).toHaveTextContent('2 MB')
     expect(selectedFiles[0].querySelector('.requests-new-file-details')).not.toBeEmptyDOMElement()
 
-    await user.click(screen.getByRole('button', { name: /submit request/i }))
+    await submitWithNoVisibleNeighbors(user)
 
     const [request] = JSON.parse(localStorage.getItem(storageKeys.REQUESTS_KEY))
     expect(request.improvements[0].files).toEqual([
@@ -238,7 +245,7 @@ describe('RequestsNew', () => {
     expect(screen.queryByText('first.pdf')).not.toBeInTheDocument()
     expect(screen.getByText('second.png')).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: /submit request/i }))
+    await submitWithNoVisibleNeighbors(user)
 
     const [request] = JSON.parse(localStorage.getItem(storageKeys.REQUESTS_KEY))
     expect(request.improvements[0].files).toEqual([
@@ -439,7 +446,7 @@ describe('RequestsNew', () => {
     await user.type(screen.getByLabelText('Website Link 1'), 'https://example.com/final')
     await user.type(screen.getByLabelText('Link Description 1'), 'Final project plans')
     await user.click(screen.getByRole('button', { name: 'Add Link' }))
-    await user.click(screen.getByRole('button', { name: /submit request/i }))
+    await submitWithNoVisibleNeighbors(user)
 
     const [request] = JSON.parse(localStorage.getItem(storageKeys.REQUESTS_KEY))
     expect(request.improvements[0].links).toEqual([
@@ -539,7 +546,7 @@ describe('RequestsNew', () => {
       new File(['fence'], 'fence.pdf', { type: 'application/pdf' }),
     )
 
-    await user.click(screen.getByRole('button', { name: /submit request/i }))
+    await submitWithNoVisibleNeighbors(user)
 
     const [request] = JSON.parse(localStorage.getItem(storageKeys.REQUESTS_KEY))
     expect(request.improvements).toEqual([
@@ -568,7 +575,7 @@ describe('RequestsNew', () => {
     await user.selectOptions(screen.getByLabelText('Improvement Type 1*'), 'Painting')
     await user.type(screen.getByLabelText('Description 1*'), 'Paint the exterior')
     await user.click(screen.getByRole('button', { name: /add improvement/i }))
-    await user.click(screen.getByRole('button', { name: /submit request/i }))
+    await user.click(screen.getByRole('button', { name: /next: add neighbors/i }))
 
     expect(screen.getByLabelText('Improvement Type 2*')).toHaveAttribute('aria-invalid', 'true')
     expect(screen.getByLabelText('Description 2*')).toHaveAttribute('aria-invalid', 'true')
@@ -647,7 +654,7 @@ describe('RequestsNew', () => {
 
     await user.selectOptions(screen.getByLabelText('Improvement Type 1*'), 'Painting')
     await user.type(screen.getByLabelText('Description 1*'), 'No session request')
-    await user.click(screen.getByRole('button', { name: /submit request/i }))
+    await submitWithNoVisibleNeighbors(user)
 
     expect(screen.getByText('Please log in before creating a request.')).toBeInTheDocument()
     expect(mockNavigate).toHaveBeenCalledWith('/login')
@@ -662,8 +669,60 @@ describe('RequestsNew', () => {
       </MemoryRouter>,
     )
 
-    await user.click(screen.getByRole('button', { name: /submit request/i }))
+    await user.click(screen.getByRole('button', { name: /next: add neighbors/i }))
     await user.click(screen.getByRole('button', { name: /dismiss alert/i }))
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  test('requires a neighbor choice and validates neighbor details', async () => {
+    const user = userEvent.setup()
+    render(<MemoryRouter><RequestsNew /></MemoryRouter>)
+
+    await user.selectOptions(screen.getByLabelText('Improvement Type 1*'), 'Painting')
+    await user.type(screen.getByLabelText('Description 1*'), 'Paint the exterior')
+    await user.click(screen.getByRole('button', { name: /next: add neighbors/i }))
+    await user.click(screen.getByRole('button', { name: /next: review request/i }))
+    expect(screen.getByText(/add at least one neighbor/i)).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /add neighbor/i }))
+    await user.click(screen.getByRole('button', { name: /next: review request/i }))
+    expect(screen.getByLabelText(/full name/i)).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getByLabelText(/street address/i)).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getByLabelText(/email address/i)).toHaveAttribute('aria-invalid', 'true')
+
+    await user.type(screen.getByLabelText(/full name/i), 'Jordan Smith')
+    await user.type(screen.getByLabelText(/street address/i), '12 Oak St')
+    await user.type(screen.getByLabelText(/email address/i), 'jordan@example.com')
+    await user.click(screen.getByRole('button', { name: /next: review request/i }))
+
+    expect(screen.getByRole('heading', { name: /review your request/i })).toBeInTheDocument()
+    expect(screen.getByText(/jordan smith · 12 oak st · jordan@example.com/i)).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /submit request/i }))
+
+    const [request] = JSON.parse(localStorage.getItem(storageKeys.REQUESTS_KEY))
+    expect(request.neighbors).toEqual([
+      expect.objectContaining({ email: 'jordan@example.com', status: 'pending' }),
+    ])
+    expect(request.neighborAcknowledgmentStatus).toBe('Pending')
+  })
+
+  test('removes a neighbor and supports returning to prior steps', async () => {
+    const user = userEvent.setup()
+    render(<MemoryRouter><RequestsNew /></MemoryRouter>)
+
+    await user.selectOptions(screen.getByLabelText('Improvement Type 1*'), 'Painting')
+    await user.type(screen.getByLabelText('Description 1*'), 'Paint the exterior')
+    await user.click(screen.getByRole('button', { name: /next: add neighbors/i }))
+    await user.click(screen.getByRole('button', { name: /add neighbor/i }))
+    await user.click(screen.getByRole('button', { name: /remove neighbor 1/i }))
+    expect(screen.queryByRole('group', { name: /neighbor 1/i })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('checkbox', { name: /no neighboring property can view/i }))
+    await user.click(screen.getByRole('button', { name: /next: review request/i }))
+    await user.click(screen.getByRole('button', { name: /edit request details/i }))
+    expect(screen.getByLabelText('Description 1*')).toHaveValue('Paint the exterior')
+    await user.click(screen.getByRole('button', { name: /next: add neighbors/i }))
+    await user.click(screen.getByRole('button', { name: /^back$/i }))
+    expect(screen.getByLabelText('Description 1*')).toBeInTheDocument()
   })
 })

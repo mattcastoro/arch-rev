@@ -40,7 +40,9 @@ function RequestsPanel({ requests, onCreateRequest }) {
                   <p className="home-card__meta">Files: {improvement.files.length}</p>
                 </div>
               ))}
-              <p className="home-card__meta">Status: {request.status}</p>
+              <p className="home-card__meta">Committee: {request.committeeStatus ?? 'Not reviewed'}</p>
+              <p className="home-card__meta">Neighbors: {request.neighborAcknowledgmentStatus ?? 'Not required'}</p>
+              <p className="home-card__meta">Overall: {request.status}</p>
             </article>
           ))}
         </div>

@@ -64,6 +64,7 @@ function PencilIcon() {
 
 function RequestsNew() {
   const navigate = useNavigate()
+  const [step, setStep] = useState(1)
   const [alertMessage, setAlertMessage] = useState('')
   const [invalidFields, setInvalidFields] = useState([])
   const [improvements, setImprovements] = useState([{ id: 0, files: [], links: [] }])
@@ -81,6 +82,10 @@ function RequestsNew() {
   const [draggingImprovementId, setDraggingImprovementId] = useState(null)
   const [improvementToRemove, setImprovementToRemove] = useState(null)
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false)
+  const [neighbors, setNeighbors] = useState([])
+  const [noVisibleNeighbors, setNoVisibleNeighbors] = useState(false)
+  const [neighborErrors, setNeighborErrors] = useState({})
+  const [reviewImprovements, setReviewImprovements] = useState([])
   const nextImprovementId = useRef(1)
   const uploadTimers = useRef(new Map())
   const previewUrl = useRef(null)
@@ -422,7 +427,7 @@ function RequestsNew() {
         || improvementValues.links.length
     })
 
-    if (hasEnteredData || improvements.length > 1) {
+    if (hasEnteredData || improvements.length > 1 || neighbors.length || noVisibleNeighbors) {
       setShowCancelConfirmation(true)
       return
     }
@@ -430,18 +435,8 @@ function RequestsNew() {
     navigate('/home')
   }
 
-  function handleSubmit(event) {
-    event.preventDefault()
-
-    const ownerEmail = getCurrentUserEmail()
-    if (!ownerEmail) {
-      setAlertMessage('Please log in before creating a request.')
-      navigate('/login')
-      return
-    }
-
-    const form = event.currentTarget
-    const requestImprovements = improvements.map((improvement) => {
+  function getRequestImprovements(form) {
+    return improvements.map((improvement) => {
       const improvementValues = getImprovementValues(form, improvement)
 
       return {
@@ -459,12 +454,90 @@ function RequestsNew() {
         })),
       }
     })
+  }
 
+  function continueToNeighbors(event) {
+    const form = event.currentTarget.form
     if (!validateImprovements(form)) return
+    setAlertMessage('')
+    setStep(2)
+  }
+
+  function addNeighbor() {
+    setNeighbors((current) => [
+      ...current,
+      { id: `neighbor-${Date.now()}-${current.length}`, fullName: '', streetAddress: '', email: '' },
+    ])
+    setNoVisibleNeighbors(false)
+  }
+
+  function updateNeighbor(id, field, value) {
+    setNeighbors((current) => current.map((neighbor) => (
+      neighbor.id === id ? { ...neighbor, [field]: value } : neighbor
+    )))
+    setNeighborErrors((current) => ({ ...current, [`${id}-${field}`]: false }))
+  }
+
+  function removeNeighbor(id) {
+    setNeighbors((current) => current.filter((neighbor) => neighbor.id !== id))
+    setNeighborErrors((current) => Object.fromEntries(
+      Object.entries(current).filter(([key]) => !key.startsWith(`${id}-`)),
+    ))
+  }
+
+  function validateNeighbors() {
+    if (noVisibleNeighbors) {
+      setNeighborErrors({})
+      return true
+    }
+
+    if (!neighbors.length) {
+      setAlertMessage('Add at least one neighbor or confirm that no neighboring property can view the project.')
+      return false
+    }
+
+    const errors = {}
+    neighbors.forEach((neighbor) => {
+      if (!neighbor.fullName.trim()) errors[`${neighbor.id}-fullName`] = true
+      if (!neighbor.streetAddress.trim()) errors[`${neighbor.id}-streetAddress`] = true
+      if (!/^\S+@\S+\.\S+$/.test(neighbor.email.trim())) errors[`${neighbor.id}-email`] = true
+    })
+    setNeighborErrors(errors)
+    setAlertMessage(Object.keys(errors).length ? 'Please complete the highlighted neighbor fields.' : '')
+    return Object.keys(errors).length === 0
+  }
+
+  function continueToReview(event) {
+    if (!validateNeighbors()) return
+    setReviewImprovements(getRequestImprovements(event.currentTarget.form))
+    setAlertMessage('')
+    setStep(3)
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault()
+
+    const ownerEmail = getCurrentUserEmail()
+    if (!ownerEmail) {
+      setAlertMessage('Please log in before creating a request.')
+      navigate('/login')
+      return
+    }
+
+    const form = event.currentTarget
+    const requestImprovements = getRequestImprovements(form)
+
+    if (!validateImprovements(form) || !validateNeighbors()) return
 
     createRequest({
       ownerEmail,
       improvements: requestImprovements,
+      neighbors: neighbors.map(({ fullName, streetAddress, email }) => ({
+        fullName: fullName.trim(),
+        streetAddress: streetAddress.trim(),
+        email: email.trim(),
+      })),
+      noVisibleNeighbors,
     })
 
     setAlertMessage('')
@@ -512,8 +585,16 @@ function RequestsNew() {
     <div className="requests-new-page">
       <header className="requests-new-header">
         <h1>Create New Request</h1>
-        <p>Use this form to submit your improvement details for local workflow testing.</p>
+        <p>Step {step} of 3 · {step === 1 ? 'Request details' : step === 2 ? 'Neighbor acknowledgment' : 'Review and submit'}</p>
       </header>
+
+      <ol className="requests-new-steps" aria-label="Request progress">
+        {['Request details', 'Neighbors', 'Review'].map((label, index) => (
+          <li key={label} aria-current={step === index + 1 ? 'step' : undefined}>
+            <span>{index + 1}</span>{label}
+          </li>
+        ))}
+      </ol>
 
       <form className="requests-new-form" noValidate onSubmit={handleSubmit}>
         {alertMessage && (
@@ -522,7 +603,7 @@ function RequestsNew() {
           </Alert>
         )}
 
-        <div className="requests-new-improvements">
+        <div className="requests-new-improvements" hidden={step !== 1}>
           {improvements.map((improvement, index) => {
             const { id, files, links } = improvement
 
@@ -728,7 +809,7 @@ function RequestsNew() {
           })}
         </div>
 
-        <div className="requests-new-add-improvement">
+        <div className="requests-new-add-improvement" hidden={step !== 1}>
           <Button
             type="button"
             variant="secondary"
@@ -739,13 +820,97 @@ function RequestsNew() {
           </Button>
         </div>
 
+        {step === 2 && (
+          <section className="requests-new-section requests-new-neighbors" aria-labelledby="neighbors-heading">
+            <h2 id="neighbors-heading">Neighbor acknowledgment</h2>
+            <p>Add every neighbor who can view the project from their property. Acknowledgment confirms review, not approval.</p>
+
+            <label className="requests-new-attestation">
+              <input
+                type="checkbox"
+                checked={noVisibleNeighbors}
+                onChange={(event) => {
+                  setNoVisibleNeighbors(event.target.checked)
+                  if (event.target.checked) setNeighbors([])
+                  setAlertMessage('')
+                }}
+              />
+              No neighboring property can view this project.
+            </label>
+
+            {!noVisibleNeighbors && neighbors.map((neighbor, index) => (
+              <fieldset className="requests-new-neighbor" key={neighbor.id}>
+                <legend>Neighbor {index + 1}</legend>
+                <button type="button" onClick={() => removeNeighbor(neighbor.id)} aria-label={`Remove neighbor ${index + 1}`}>Remove</button>
+                <label>
+                  Full name
+                  <input
+                    type="text"
+                    value={neighbor.fullName}
+                    aria-invalid={neighborErrors[`${neighbor.id}-fullName`] || undefined}
+                    onChange={(event) => updateNeighbor(neighbor.id, 'fullName', event.target.value)}
+                  />
+                </label>
+                <label>
+                  Street address
+                  <input
+                    type="text"
+                    value={neighbor.streetAddress}
+                    aria-invalid={neighborErrors[`${neighbor.id}-streetAddress`] || undefined}
+                    onChange={(event) => updateNeighbor(neighbor.id, 'streetAddress', event.target.value)}
+                  />
+                </label>
+                <label>
+                  Email address
+                  <input
+                    type="email"
+                    value={neighbor.email}
+                    aria-invalid={neighborErrors[`${neighbor.id}-email`] || undefined}
+                    onChange={(event) => updateNeighbor(neighbor.id, 'email', event.target.value)}
+                  />
+                </label>
+              </fieldset>
+            ))}
+
+            {!noVisibleNeighbors && (
+              <Button type="button" variant="secondary" size="btn-sm" onClick={addNeighbor}>Add Neighbor</Button>
+            )}
+          </section>
+        )}
+
+        {step === 3 && (
+          <section className="requests-new-section requests-new-review" aria-labelledby="review-heading">
+            <h2 id="review-heading">Review your request</h2>
+            <p>The committee may review and approve the request while acknowledgments are pending. It will not be finalized until all requirements are complete.</p>
+            <div>
+              <h3>Improvements</h3>
+              {reviewImprovements.map((improvement, index) => (
+                <article key={`${improvement.improvementType}-${index}`}>
+                  <strong>{improvement.improvementType}</strong>
+                  <p>{improvement.description}</p>
+                  <small>{improvement.files.length} file(s) · {improvement.links.length} link(s)</small>
+                </article>
+              ))}
+              <Button type="button" variant="secondary" size="btn-sm" onClick={() => setStep(1)}>Edit Request Details</Button>
+            </div>
+            <div>
+              <h3>Neighbors</h3>
+              {noVisibleNeighbors ? <p>No neighboring property can view this project.</p> : (
+                <ul>{neighbors.map((neighbor) => <li key={neighbor.id}>{neighbor.fullName} · {neighbor.streetAddress} · {neighbor.email}</li>)}</ul>
+              )}
+              <Button type="button" variant="secondary" size="btn-sm" onClick={() => setStep(2)}>Edit Neighbors</Button>
+            </div>
+          </section>
+        )}
+
         <div className="requests-new-actions">
           <Button type="button" variant="secondary" size="btn-md" onClick={handleCancelRequest}>
             Cancel
           </Button>
-          <Button type="submit" variant="primary" size="btn-md">
-            Submit Request
-          </Button>
+          {step > 1 && <Button type="button" variant="secondary" size="btn-md" onClick={() => setStep(step - 1)}>Back</Button>}
+          {step === 1 && <Button type="button" variant="primary" size="btn-md" onClick={continueToNeighbors}>Next: Add Neighbors</Button>}
+          {step === 2 && <Button type="button" variant="primary" size="btn-md" onClick={continueToReview}>Next: Review Request</Button>}
+          {step === 3 && <Button type="submit" variant="primary" size="btn-md">Submit Request</Button>}
         </div>
       </form>
 
