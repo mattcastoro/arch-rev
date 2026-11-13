@@ -33,7 +33,9 @@ describe('SignUpForm', () => {
     expect(screen.getByRole('heading', { name: /person 2/i })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /add person/i })).not.toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: /remove second person/i }))
+    const removePersonButton = screen.getByRole('button', { name: /remove second person/i })
+    expect(removePersonButton.querySelector('svg')).not.toBeNull()
+    await user.click(removePersonButton)
     expect(screen.queryByRole('heading', { name: /person 2/i })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /add person/i })).toBeInTheDocument()
   })

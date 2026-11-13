@@ -9,6 +9,7 @@ describe('FormField', () => {
     expect(input).toHaveAttribute('id', 'email')
     expect(input).toHaveAttribute('name', 'email')
     expect(input).toHaveAttribute('type', 'text')
+    expect(input).toHaveAttribute('placeholder', 'Email')
     expect(input).toBeRequired()
   })
 

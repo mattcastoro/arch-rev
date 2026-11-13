@@ -15,7 +15,7 @@ function FormField({
   invalid = false,
   defaultValue = '',
 }) {
-  const fieldPlaceholder = `${placeholder || label}${required ? ' *' : ''}`
+  const fieldPlaceholder = placeholder || label
   const accessibleLabel = required ? `${ariaLabel}*` : ariaLabel
 
   return (

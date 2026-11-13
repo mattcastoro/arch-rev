@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import Alert from "../Alert/Alert"
 import Button from "../Button/Button"
 import FormField from "../FormField/FormField"
+import TrashIcon from '../TrashIcon/TrashIcon'
 import { createUser, setSession } from '../../lib/localData'
 
 function SignUpForm() {
@@ -128,7 +129,7 @@ function SignUpForm() {
                     aria-label="Remove second person"
                     onClick={() => handleRemovePerson(personId)}
                   >
-                    x
+                    <TrashIcon />
                   </button>
                 )}
               </div>

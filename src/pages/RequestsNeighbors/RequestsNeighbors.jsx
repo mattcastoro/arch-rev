@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import Alert from '../../components/Alert/Alert'
 import Button from '../../components/Button/Button'
+import TrashIcon from '../../components/TrashIcon/TrashIcon'
 import { createRequest, getCurrentUserEmail } from '../../lib/localData'
 import '../RequestsNew/RequestsNew.css'
 
@@ -115,17 +116,17 @@ function RequestsNeighbors() {
           <p>Acknowledgment confirms review, not approval.</p>
           {!noVisibleNeighbors && neighbors.map((neighbor, index) => (
             <fieldset className="requests-new-neighbor" key={neighbor.id} aria-label="Neighbor details">
+              <input aria-label="Full name" placeholder="Full name" value={neighbor.fullName} aria-invalid={errors[`${neighbor.id}-fullName`] || undefined} onChange={(event) => updateNeighbor(neighbor.id, 'fullName', event.target.value)} />
+              <input aria-label="Street address" placeholder="Street address" value={neighbor.streetAddress} aria-invalid={errors[`${neighbor.id}-streetAddress`] || undefined} onChange={(event) => updateNeighbor(neighbor.id, 'streetAddress', event.target.value)} />
+              <input aria-label="Email address" placeholder="Email address" type="email" value={neighbor.email} aria-invalid={errors[`${neighbor.id}-email`] || undefined} onChange={(event) => updateNeighbor(neighbor.id, 'email', event.target.value)} />
               <button
                 className="requests-new-improvement-remove requests-new-neighbor-remove"
                 type="button"
                 onClick={() => removeNeighbor(neighbor.id)}
                 aria-label={`Remove neighbor ${index + 1}`}
               >
-                x
+                <TrashIcon />
               </button>
-              <label>Full name<input value={neighbor.fullName} aria-invalid={errors[`${neighbor.id}-fullName`] || undefined} onChange={(event) => updateNeighbor(neighbor.id, 'fullName', event.target.value)} /></label>
-              <label>Street address<input value={neighbor.streetAddress} aria-invalid={errors[`${neighbor.id}-streetAddress`] || undefined} onChange={(event) => updateNeighbor(neighbor.id, 'streetAddress', event.target.value)} /></label>
-              <label>Email address<input type="email" value={neighbor.email} aria-invalid={errors[`${neighbor.id}-email`] || undefined} onChange={(event) => updateNeighbor(neighbor.id, 'email', event.target.value)} /></label>
             </fieldset>
           ))}
           {!noVisibleNeighbors && <Button type="button" variant="secondary" size="btn-sm" onClick={addNeighbor}>Add Neighbor</Button>}

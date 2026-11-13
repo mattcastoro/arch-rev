@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import Alert from '../../components/Alert/Alert'
 import Button from '../../components/Button/Button'
 import FormField from '../../components/FormField/FormField'
+import TrashIcon from '../../components/TrashIcon/TrashIcon'
 import { createRequest, getCurrentUserEmail } from '../../lib/localData'
 import './RequestsNew.css'
 
@@ -44,14 +45,6 @@ function getFileValidationError(file) {
   if (file.size === 0) return `“${file.name}” appears to be empty or unreadable. Upload the file again.`
   if (file.size > maximumFileSize) return `“${file.name}” is ${formatFileSize(file.size)}. The maximum file size is 10 MB.`
   return ''
-}
-
-function TrashIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m4 4v6m6-6v6" />
-    </svg>
-  )
 }
 
 function PencilIcon() {
@@ -642,7 +635,7 @@ function RequestsNew() {
                     aria-label={`Remove improvement ${index + 1}`}
                     onClick={(event) => handleRemoveImprovement(event, improvement)}
                   >
-                    x
+                    <TrashIcon />
                   </button>
                 )}
                 <FormField
@@ -867,41 +860,17 @@ function RequestsNew() {
 
             {!noVisibleNeighbors && neighbors.map((neighbor, index) => (
               <fieldset className="requests-new-neighbor" key={neighbor.id} aria-label="Neighbor details">
+                <input aria-label="Full name" placeholder="Full name" type="text" value={neighbor.fullName} aria-invalid={neighborErrors[`${neighbor.id}-fullName`] || undefined} onChange={(event) => updateNeighbor(neighbor.id, 'fullName', event.target.value)} />
+                <input aria-label="Street address" placeholder="Street address" type="text" value={neighbor.streetAddress} aria-invalid={neighborErrors[`${neighbor.id}-streetAddress`] || undefined} onChange={(event) => updateNeighbor(neighbor.id, 'streetAddress', event.target.value)} />
+                <input aria-label="Email address" placeholder="Email address" type="email" value={neighbor.email} aria-invalid={neighborErrors[`${neighbor.id}-email`] || undefined} onChange={(event) => updateNeighbor(neighbor.id, 'email', event.target.value)} />
                 <button
                   className="requests-new-improvement-remove requests-new-neighbor-remove"
                   type="button"
                   onClick={() => removeNeighbor(neighbor.id)}
                   aria-label={`Remove neighbor ${index + 1}`}
                 >
-                  x
+                  <TrashIcon />
                 </button>
-                <label>
-                  Full name
-                  <input
-                    type="text"
-                    value={neighbor.fullName}
-                    aria-invalid={neighborErrors[`${neighbor.id}-fullName`] || undefined}
-                    onChange={(event) => updateNeighbor(neighbor.id, 'fullName', event.target.value)}
-                  />
-                </label>
-                <label>
-                  Street address
-                  <input
-                    type="text"
-                    value={neighbor.streetAddress}
-                    aria-invalid={neighborErrors[`${neighbor.id}-streetAddress`] || undefined}
-                    onChange={(event) => updateNeighbor(neighbor.id, 'streetAddress', event.target.value)}
-                  />
-                </label>
-                <label>
-                  Email address
-                  <input
-                    type="email"
-                    value={neighbor.email}
-                    aria-invalid={neighborErrors[`${neighbor.id}-email`] || undefined}
-                    onChange={(event) => updateNeighbor(neighbor.id, 'email', event.target.value)}
-                  />
-                </label>
               </fieldset>
             ))}
 
