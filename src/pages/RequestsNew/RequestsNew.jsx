@@ -622,8 +622,12 @@ function RequestsNew() {
           </Alert>
         )}
 
-        <div className="requests-new-improvements" hidden={step !== 1}>
-          {improvements.map((improvement, index) => {
+        <section className="requests-new-section requests-new-details" hidden={step !== 1} aria-labelledby="request-details-heading">
+          <h2 id="request-details-heading">Request details</h2>
+          <p>Describe each planned improvement and include any supporting files or links.</p>
+
+          <div className="requests-new-improvements">
+            {improvements.map((improvement, index) => {
             const { id, files, links } = improvement
 
             return (
@@ -827,19 +831,20 @@ function RequestsNew() {
               </div>
             </section>
             )
-          })}
-        </div>
+            })}
+          </div>
 
-        <div className="requests-new-add-improvement" hidden={step !== 1}>
-          <Button
-            type="button"
-            variant="secondary"
-            size="btn-sm"
-            onClick={handleAddImprovement}
-          >
-            Add Improvement
-          </Button>
-        </div>
+          <div className="requests-new-add-improvement">
+            <Button
+              type="button"
+              variant="secondary"
+              size="btn-sm"
+              onClick={handleAddImprovement}
+            >
+              Add Improvement
+            </Button>
+          </div>
+        </section>
 
         {step === 2 && (
           <section className="requests-new-section requests-new-neighbors" aria-labelledby="neighbors-heading">

@@ -68,6 +68,16 @@
   gap: 1rem;
 }
 
+.requests-new-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.requests-new-details[hidden] {
+  display: none;
+}
+
 .requests-new-attestation {
   display: flex;
   align-items: flex-start;

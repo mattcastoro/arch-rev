@@ -39,6 +39,8 @@ describe('RequestsNew', () => {
     )
 
     expect(screen.getByRole('heading', { name: /create new request/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /request details/i })).toBeInTheDocument()
+    expect(screen.getByText(/describe each planned improvement/i)).toBeInTheDocument()
     expect(screen.getByLabelText('Improvement Type 1*')).toBeInTheDocument()
     expect(screen.getByLabelText('Description 1*')).toHaveAttribute('placeholder', 'Describe Improvement *')
     expect(screen.getByLabelText('Supporting Documentation 1')).toBeInTheDocument()
