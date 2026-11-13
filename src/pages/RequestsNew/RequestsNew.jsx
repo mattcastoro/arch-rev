@@ -86,8 +86,8 @@ function RequestsNew() {
   const [draggingImprovementId, setDraggingImprovementId] = useState(null)
   const [improvementToRemove, setImprovementToRemove] = useState(null)
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false)
-  const [neighbors, setNeighbors] = useState([])
-  const [noVisibleNeighbors, setNoVisibleNeighbors] = useState(false)
+  const [neighbors, setNeighbors] = useState(location.state?.neighbors ?? [])
+  const [noVisibleNeighbors, setNoVisibleNeighbors] = useState(location.state?.noVisibleNeighbors ?? false)
   const [neighborErrors, setNeighborErrors] = useState({})
   const [reviewImprovements, setReviewImprovements] = useState([])
   const nextImprovementId = useRef(1)
@@ -477,6 +477,8 @@ function RequestsNew() {
       state: {
         draftImprovements,
         requestImprovements: getRequestImprovements(form),
+        neighbors,
+        noVisibleNeighbors,
       },
     })
   }
@@ -604,11 +606,11 @@ function RequestsNew() {
     <div className="requests-new-page">
       <header className="requests-new-header">
         <h1>{step === 1 ? 'Create New Request' : step === 2 ? 'Neighbor Acknowledgments' : 'Review Request'}</h1>
-        <p>Step {step} of 3 · {step === 1 ? 'Request details' : step === 2 ? 'Neighbor acknowledgment' : 'Review and submit'}</p>
+        <p>Step {step} of 3 · {step === 1 ? 'Improvements' : step === 2 ? 'Neighbor acknowledgment' : 'Review and submit'}</p>
       </header>
 
       <ol className="requests-new-steps" aria-label="Request progress">
-        {['Request details', 'Neighbors', 'Review'].map((label, index) => (
+        {['Improvements', 'Neighbors', 'Review'].map((label, index) => (
           <li key={label} aria-current={step === index + 1 ? 'step' : undefined}>
             <span>{index + 1}</span>{label}
           </li>
@@ -623,7 +625,7 @@ function RequestsNew() {
         )}
 
         <section className="requests-new-section requests-new-details" hidden={step !== 1} aria-labelledby="request-details-heading">
-          <h2 id="request-details-heading">Request details</h2>
+          <h2 id="request-details-heading">Improvements</h2>
           <p>Describe each planned improvement and include any supporting files or links.</p>
 
           <div className="requests-new-improvements">
@@ -922,7 +924,7 @@ function RequestsNew() {
                   <small>{improvement.files.length} file(s) · {improvement.links.length} link(s)</small>
                 </article>
               ))}
-              <Button type="button" variant="secondary" size="btn-sm" onClick={() => { setStep(1); navigate('/requests/new') }}>Edit Request Details</Button>
+              <Button type="button" variant="secondary" size="btn-sm" onClick={() => { setStep(1); navigate('/requests/new') }}>Edit Improvements</Button>
             </div>
             <div>
               <h3>Neighbors</h3>

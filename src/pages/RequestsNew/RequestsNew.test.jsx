@@ -39,7 +39,7 @@ describe('RequestsNew', () => {
     )
 
     expect(screen.getByRole('heading', { name: /create new request/i })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /request details/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /improvements/i })).toBeInTheDocument()
     expect(screen.getByText(/describe each planned improvement/i)).toBeInTheDocument()
     expect(screen.getByLabelText('Improvement Type 1*')).toBeInTheDocument()
     expect(screen.getByLabelText('Description 1*')).toHaveAttribute('placeholder', 'Describe Improvement *')
@@ -721,7 +721,7 @@ describe('RequestsNew', () => {
 
     await user.click(screen.getByRole('checkbox', { name: /no neighboring property can view/i }))
     await user.click(screen.getByRole('button', { name: /next: review request/i }))
-    await user.click(screen.getByRole('button', { name: /edit request details/i }))
+    await user.click(screen.getByRole('button', { name: /edit improvements/i }))
     expect(screen.getByLabelText('Description 1*')).toHaveValue('Paint the exterior')
     await user.click(screen.getByRole('button', { name: /next: add neighbors/i }))
     await user.click(screen.getByRole('button', { name: /^back$/i }))

@@ -82,7 +82,7 @@ describe('App routes', () => {
 
     expect(screen.getByRole('heading', { name: /neighbor acknowledgments/i })).toBeInTheDocument()
     expect(screen.queryByLabelText('Description 1*')).not.toBeInTheDocument()
-    expect(screen.getByRole('list', { name: /request progress/i })).toHaveTextContent('1Request details2Neighbors3Review')
+    expect(screen.getByRole('list', { name: /request progress/i })).toHaveTextContent('1Improvements2Neighbors3Review')
     expect(screen.getByText('Neighbors', { selector: '[aria-current="step"]' })).toBeInTheDocument()
     expect(screen.getAllByRole('group', { name: /neighbor details/i })).toHaveLength(1)
     expect(screen.getByLabelText(/full name/i)).toBeInTheDocument()
@@ -123,5 +123,32 @@ describe('App routes', () => {
 
     renderAt('/requests/new/review')
     expect(await screen.findByRole('button', { name: /log in/i })).toBeInTheDocument()
+  })
+
+  test('preserves entered neighbors when adding an improvement after going back', async () => {
+    const user = userEvent.setup()
+    localStorage.setItem(storageKeys.SESSION_KEY, JSON.stringify({
+      email: 'person@example.com',
+      isAuthenticated: true,
+      loginAt: 'now',
+    }))
+    renderAt('/requests/new')
+
+    await user.selectOptions(screen.getByLabelText('Improvement Type 1*'), 'Painting')
+    await user.type(screen.getByLabelText('Description 1*'), 'Paint the exterior')
+    await user.click(screen.getByRole('button', { name: /next: add neighbors/i }))
+    await user.type(screen.getByLabelText(/full name/i), 'Jordan Smith')
+    await user.type(screen.getByLabelText(/street address/i), '12 Oak St')
+    await user.type(screen.getByLabelText(/email address/i), 'jordan@example.com')
+
+    await user.click(screen.getByRole('button', { name: /^back$/i }))
+    await user.click(screen.getByRole('button', { name: /add improvement/i }))
+    await user.selectOptions(screen.getByLabelText('Improvement Type 2*'), 'Fencing')
+    await user.type(screen.getByLabelText('Description 2*'), 'Replace the fence')
+    await user.click(screen.getByRole('button', { name: /next: add neighbors/i }))
+
+    expect(screen.getByLabelText(/full name/i)).toHaveValue('Jordan Smith')
+    expect(screen.getByLabelText(/street address/i)).toHaveValue('12 Oak St')
+    expect(screen.getByLabelText(/email address/i)).toHaveValue('jordan@example.com')
   })
 })

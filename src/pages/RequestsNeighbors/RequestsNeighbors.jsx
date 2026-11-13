@@ -10,13 +10,17 @@ function RequestsNeighbors() {
   const navigate = useNavigate()
   const { draftImprovements, requestImprovements } = location.state ?? {}
   const isReview = location.pathname.endsWith('/review')
-  const [neighbors, setNeighbors] = useState(location.state?.neighbors ?? [{
-    id: `neighbor-${Date.now()}-0`,
-    fullName: '',
-    streetAddress: '',
-    email: '',
-  }])
-  const [noVisibleNeighbors, setNoVisibleNeighbors] = useState(location.state?.noVisibleNeighbors ?? false)
+  const initialNoVisibleNeighbors = location.state?.noVisibleNeighbors ?? false
+  const initialNeighbors = location.state?.neighbors ?? []
+  const [neighbors, setNeighbors] = useState(initialNeighbors.length || initialNoVisibleNeighbors
+    ? initialNeighbors
+    : [{
+      id: `neighbor-${Date.now()}-0`,
+      fullName: '',
+      streetAddress: '',
+      email: '',
+    }])
+  const [noVisibleNeighbors, setNoVisibleNeighbors] = useState(initialNoVisibleNeighbors)
   const [errors, setErrors] = useState({})
   const [alertMessage, setAlertMessage] = useState('')
 
@@ -93,7 +97,7 @@ function RequestsNeighbors() {
       </header>
 
       <ol className="requests-new-steps" aria-label="Request progress">
-        {['Request details', 'Neighbors', 'Review'].map((label, index) => {
+        {['Improvements', 'Neighbors', 'Review'].map((label, index) => {
           const currentStep = isReview ? 3 : 2
           return (
             <li key={label} aria-current={currentStep === index + 1 ? 'step' : undefined}>
@@ -147,7 +151,7 @@ function RequestsNeighbors() {
       )}
 
       <div className="requests-new-actions">
-        <Button type="button" variant="secondary" onClick={() => navigate(isReview ? '/requests/new/neighbors' : '/requests/new', { state: isReview ? { draftImprovements, requestImprovements, neighbors, noVisibleNeighbors } : { draftImprovements } })}>Back</Button>
+        <Button type="button" variant="secondary" onClick={() => navigate(isReview ? '/requests/new/neighbors' : '/requests/new', { state: { draftImprovements, requestImprovements, neighbors, noVisibleNeighbors } })}>Back</Button>
         {isReview ? <Button type="button" onClick={submitRequest}>Submit Request</Button> : <Button type="button" onClick={continueToReview}>Next: Review Request</Button>}
       </div>
     </div>
