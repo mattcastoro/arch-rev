@@ -68,6 +68,30 @@ describe('SignUpForm', () => {
     const users = JSON.parse(localStorage.getItem(storageKeys.USERS_KEY))
     expect(users[0].residents).toHaveLength(2)
     expect(users[0].residents[1].role).toBe('Secondary')
+    expect(users[0].residents[0].phoneCountryCode).toBe('+1')
+    expect(users[0].residents[0].phone).toBe('555-123-4567')
+  })
+
+  test('formats domestic phone numbers while allowing international numbers', async () => {
+    const user = userEvent.setup()
+    render(<MemoryRouter><SignUpForm /></MemoryRouter>)
+
+    const phone = screen.getByLabelText('Phone*')
+    const countryCode = screen.getByLabelText('Country code*')
+    expect(countryCode).toHaveValue('+1')
+    expect(phone).toHaveAttribute('placeholder', 'Phone number')
+    expect(phone).toHaveAttribute('inputmode', 'tel')
+
+    await user.type(phone, '3035551212')
+    expect(phone).toHaveValue('303-555-1212')
+
+    await user.clear(countryCode)
+    await user.type(countryCode, '44')
+    expect(countryCode).toHaveValue('+44')
+
+    await user.clear(phone)
+    await user.type(phone, '2079460958')
+    expect(phone).toHaveValue('2079460958')
   })
 
   test('shows validation for missing required fields', async () => {

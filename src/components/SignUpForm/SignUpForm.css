@@ -80,3 +80,18 @@
   border-color: var(--error);
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
 }
+
+.phone-fields {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.phone-fields > input {
+  min-width: 0;
+}
+
+.phone-fields .field {
+  min-width: 0;
+}

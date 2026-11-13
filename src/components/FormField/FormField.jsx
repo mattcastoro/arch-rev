@@ -14,6 +14,8 @@ function FormField({
   rows = 4,
   invalid = false,
   defaultValue = '',
+  inputMode,
+  onChange,
 }) {
   const fieldPlaceholder = placeholder || label
   const accessibleLabel = required ? `${ariaLabel}*` : ariaLabel
@@ -31,6 +33,8 @@ function FormField({
           required={required}
           rows={rows}
           defaultValue={defaultValue}
+          inputMode={inputMode}
+          onChange={onChange}
         />
       ) : null}
       {as === 'select' ? (
@@ -60,6 +64,8 @@ function FormField({
           placeholder={fieldPlaceholder}
           required={required}
           defaultValue={defaultValue}
+          inputMode={inputMode}
+          onChange={onChange}
         />
       ) : null}
     </div>

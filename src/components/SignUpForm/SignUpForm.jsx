@@ -7,15 +7,30 @@ import FormField from "../FormField/FormField"
 import TrashIcon from '../TrashIcon/TrashIcon'
 import { createUser, setSession } from '../../lib/localData'
 
+function formatPhoneNumber(value, countryCode) {
+  const digits = value.replace(/\D/g, '')
+
+  if (countryCode !== '+1') return digits.slice(0, 15)
+
+  const domesticDigits = digits.slice(0, 10)
+  if (domesticDigits.length <= 3) return domesticDigits
+  if (domesticDigits.length <= 6) {
+    return `${domesticDigits.slice(0, 3)}-${domesticDigits.slice(3)}`
+  }
+  return `${domesticDigits.slice(0, 3)}-${domesticDigits.slice(3, 6)}-${domesticDigits.slice(6)}`
+}
+
 function SignUpForm() {
   const navigate = useNavigate()
   const [alertMessage, setAlertMessage] = useState('')
   const [people, setPeople] = useState([1])
   const [nextPersonId, setNextPersonId] = useState(2)
   const [invalidFields, setInvalidFields] = useState([])
+  const [phoneCountryCodes, setPhoneCountryCodes] = useState({ 1: '+1' })
 
   function handleAddPerson() {
     setPeople((currentPeople) => [...currentPeople, nextPersonId])
+    setPhoneCountryCodes((currentCodes) => ({ ...currentCodes, [nextPersonId]: '+1' }))
     setNextPersonId((currentId) => currentId + 1)
   }
 
@@ -39,6 +54,7 @@ function SignUpForm() {
           [`firstName-${personId}`, `${personLabel} first name`],
           [`lastName-${personId}`, `${personLabel} last name`],
           [`email-${personId}`, `${personLabel} email`],
+          [`phoneCountry-${personId}`, `${personLabel} phone country code`],
           [`phone-${personId}`, `${personLabel} phone`],
         ]
       }),
@@ -72,6 +88,7 @@ function SignUpForm() {
       firstName: formData.get(`firstName-${personId}`)?.trim(),
       lastName: formData.get(`lastName-${personId}`)?.trim(),
       email: formData.get(`email-${personId}`)?.trim().toLowerCase(),
+      phoneCountryCode: formData.get(`phoneCountry-${personId}`)?.trim(),
       phone: formData.get(`phone-${personId}`)?.trim(),
     }))
 
@@ -157,13 +174,41 @@ function SignUpForm() {
                   required
                   invalid={invalidFields.includes(`email-${personId}`)}
                 />
-                <FormField
-                  label="Phone"
-                  id={`phone-${personId}`}
-                  type="tel"
-                  required
-                  invalid={invalidFields.includes(`phone-${personId}`)}
-                />
+                <div className="phone-fields">
+                  <input
+                    className={invalidFields.includes(`phoneCountry-${personId}`) ? 'field__control--invalid' : undefined}
+                    name={`phoneCountry-${personId}`}
+                    type="tel"
+                    inputMode="tel"
+                    aria-label="Country code*"
+                    title="Country code (USA/Canada defaults to +1)"
+                    placeholder="+1"
+                    required
+                    value={phoneCountryCodes[personId]}
+                    onChange={(event) => {
+                      const digits = event.target.value.replace(/\D/g, '').slice(0, 3)
+                      setPhoneCountryCodes((currentCodes) => ({
+                        ...currentCodes,
+                        [personId]: digits ? `+${digits}` : '',
+                      }))
+                    }}
+                  />
+                  <FormField
+                    label="Phone"
+                    id={`phone-${personId}`}
+                    type="tel"
+                    inputMode="tel"
+                    placeholder="Phone number"
+                    required
+                    invalid={invalidFields.includes(`phone-${personId}`)}
+                    onChange={(event) => {
+                      event.currentTarget.value = formatPhoneNumber(
+                        event.currentTarget.value,
+                        phoneCountryCodes[personId],
+                      )
+                    }}
+                  />
+                </div>
               </div>
             </section>
           ))}
