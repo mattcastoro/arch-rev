@@ -551,7 +551,7 @@ function RequestsNew() {
     createRequest({
       ownerEmail,
       improvements: requestImprovements,
-      neighbors: neighbors.map(({ fullName, streetAddress, email }) => ({
+      neighbors: (noVisibleNeighbors ? [] : neighbors).map(({ fullName, streetAddress, email }) => ({
         fullName: fullName.trim(),
         streetAddress: streetAddress.trim(),
         email: email.trim(),
@@ -852,7 +852,6 @@ function RequestsNew() {
                 checked={noVisibleNeighbors}
                 onChange={(event) => {
                   setNoVisibleNeighbors(event.target.checked)
-                  if (event.target.checked) setNeighbors([])
                   setAlertMessage('')
                 }}
               />
@@ -860,8 +859,7 @@ function RequestsNew() {
             </label>
 
             {!noVisibleNeighbors && neighbors.map((neighbor, index) => (
-              <fieldset className="requests-new-neighbor" key={neighbor.id}>
-                <legend>Neighbor {index + 1}</legend>
+              <fieldset className="requests-new-neighbor" key={neighbor.id} aria-label="Neighbor details">
                 <button
                   className="requests-new-improvement-remove requests-new-neighbor-remove"
                   type="button"

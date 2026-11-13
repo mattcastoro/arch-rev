@@ -715,7 +715,7 @@ describe('RequestsNew', () => {
     await user.click(screen.getByRole('button', { name: /next: add neighbors/i }))
     await user.click(screen.getByRole('button', { name: /add neighbor/i }))
     await user.click(screen.getByRole('button', { name: /remove neighbor 1/i }))
-    expect(screen.queryByRole('group', { name: /neighbor 1/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: /neighbor details/i })).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('checkbox', { name: /no neighboring property can view/i }))
     await user.click(screen.getByRole('button', { name: /next: review request/i }))

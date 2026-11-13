@@ -10,7 +10,12 @@ function RequestsNeighbors() {
   const navigate = useNavigate()
   const { draftImprovements, requestImprovements } = location.state ?? {}
   const isReview = location.pathname.endsWith('/review')
-  const [neighbors, setNeighbors] = useState(location.state?.neighbors ?? [])
+  const [neighbors, setNeighbors] = useState(location.state?.neighbors ?? [{
+    id: `neighbor-${Date.now()}-0`,
+    fullName: '',
+    streetAddress: '',
+    email: '',
+  }])
   const [noVisibleNeighbors, setNoVisibleNeighbors] = useState(location.state?.noVisibleNeighbors ?? false)
   const [errors, setErrors] = useState({})
   const [alertMessage, setAlertMessage] = useState('')
@@ -71,7 +76,12 @@ function RequestsNeighbors() {
       navigate('/login')
       return
     }
-    createRequest({ ownerEmail, improvements: requestImprovements, neighbors, noVisibleNeighbors })
+    createRequest({
+      ownerEmail,
+      improvements: requestImprovements,
+      neighbors: noVisibleNeighbors ? [] : neighbors,
+      noVisibleNeighbors,
+    })
     navigate('/home')
   }
 
@@ -99,22 +109,8 @@ function RequestsNeighbors() {
         <section className="requests-new-section requests-new-neighbors" aria-labelledby="neighbors-heading">
           <h2 id="neighbors-heading">Neighbors</h2>
           <p>Acknowledgment confirms review, not approval.</p>
-          <label className="requests-new-attestation">
-            <input
-            className="checkbox-field"
-              type="checkbox"
-              checked={noVisibleNeighbors}
-              onChange={(event) => {
-                setNoVisibleNeighbors(event.target.checked)
-                if (event.target.checked) setNeighbors([])
-                setAlertMessage('')
-              }}
-            />
-            No neighboring property can view this project.
-          </label>
           {!noVisibleNeighbors && neighbors.map((neighbor, index) => (
-            <fieldset className="requests-new-neighbor" key={neighbor.id}>
-              <legend>Neighbor {index + 1}</legend>
+            <fieldset className="requests-new-neighbor" key={neighbor.id} aria-label="Neighbor details">
               <button
                 className="requests-new-improvement-remove requests-new-neighbor-remove"
                 type="button"
@@ -129,6 +125,18 @@ function RequestsNeighbors() {
             </fieldset>
           ))}
           {!noVisibleNeighbors && <Button type="button" variant="secondary" size="btn-sm" onClick={addNeighbor}>Add Neighbor</Button>}
+          <label className="requests-new-attestation">
+            <input
+              className="checkbox-field"
+              type="checkbox"
+              checked={noVisibleNeighbors}
+              onChange={(event) => {
+                setNoVisibleNeighbors(event.target.checked)
+                setAlertMessage('')
+              }}
+            />
+            By checking this box, I confirm that no neighboring property can view this project.
+          </label>
         </section>
       ) : (
         <section className="requests-new-section requests-new-review" aria-labelledby="review-heading">
