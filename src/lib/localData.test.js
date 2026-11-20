@@ -7,6 +7,7 @@ import {
   getCurrentUserEmail,
   getRequests,
   getRequestsByOwner,
+  getScheduledReviewDate,
   getSession,
   getUsers,
   isAuthenticated,
@@ -15,6 +16,7 @@ import {
   storageKeys,
   updateUserPassword,
   validateLogin,
+  createRequestTitle,
 } from './localData'
 
 describe('localData', () => {
@@ -128,6 +130,25 @@ describe('localData', () => {
     expect(request.revision).toBe(1)
     expect(request.committeeStatus).toBe('Not reviewed')
     expect(request.neighborAcknowledgmentStatus).toBe('Pending')
+    expect(request.title).toMatch(/^[A-Z][a-z]+ \d{4} — Painting, Fencing$/)
+    expect(request.scheduledReviewDate).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+
+  test('assigns requests to the next second-Monday meeting', () => {
+    expect(getScheduledReviewDate(new Date(2026, 9, 4, 12))).toEqual(new Date(2026, 9, 12))
+    expect(getScheduledReviewDate(new Date(2026, 9, 12, 0))).toEqual(new Date(2026, 10, 9))
+    expect(getScheduledReviewDate(new Date(2026, 9, 15, 12))).toEqual(new Date(2026, 10, 9))
+  })
+
+  test('summarizes four or more improvements with an ellipsis', () => {
+    const title = createRequestTitle([
+      { improvementType: 'Painting' },
+      { improvementType: 'Fencing' },
+      { improvementType: 'Windows' },
+      { improvementType: 'Roofing' },
+    ], new Date(2026, 10, 9))
+
+    expect(title).toBe('November 2026 — Painting, Fencing, Windows, …')
   })
 
   test('request helpers initialize optional neighbor acknowledgments', () => {

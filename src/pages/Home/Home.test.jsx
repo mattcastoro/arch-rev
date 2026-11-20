@@ -211,6 +211,7 @@ describe('Home', () => {
     localStorage.setItem(storageKeys.REQUESTS_KEY, JSON.stringify([
       {
         id: 'req_1',
+        title: 'November 2026 — Fencing',
         ownerEmail: 'resident@example.com',
         improvementType: 'Fence',
         description: 'Replace front fence',
@@ -235,7 +236,8 @@ describe('Home', () => {
       </MemoryRouter>,
     )
 
-    expect(screen.getByRole('heading', { name: /fence/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'November 2026 — Fencing' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Fence' })).toBeInTheDocument()
     expect(screen.queryByText(/paint exterior/i)).not.toBeInTheDocument()
   })
 

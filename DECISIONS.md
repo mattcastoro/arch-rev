@@ -116,11 +116,11 @@ This file records durable architectural decisions for the Architectural Review a
 
 **Context:** A request can contain multiple improvements, while older request data and consumers may expect a single improvement at the request's top level. Browser storage cannot retain uploaded `File` objects reliably as JSON.
 
-**Decision:** Store improvements in an `improvements` array. Also expose the first improvement through the top-level `improvementType`, `description`, and `files` fields for backward compatibility. Persist uploaded-file metadata (`name`, `size`, and `type`) rather than file contents.
+**Decision:** Store improvements in an `improvements` array. Also expose the first improvement through the top-level `improvementType`, `description`, and `files` fields for backward compatibility. Persist uploaded-file metadata (`name`, `size`, and `type`) rather than file contents. At submission, assign the request to the next static second-Monday meeting, with meeting-day submissions rolling into the following month. Persist that date as `scheduledReviewDate` and generate a homeowner-facing title in the form `Month Year — Improvements`; titles list up to three improvement types and use an ellipsis when four or more exist.
 
 **Rationale:** The array supports the current multi-improvement workflow while the duplicated fields preserve compatibility with the earlier single-improvement shape. Metadata is sufficient for the local workflow demonstration and remains JSON-serializable.
 
-**Consequences:** Code reading request data should prefer `improvements` while tolerating the legacy shape where needed. The duplicated fields can diverge if updates are not centralized. Actual file upload and retrieval require backend storage and a documented schema migration.
+**Consequences:** Code reading request data should prefer `improvements` while tolerating the legacy shape where needed. The duplicated fields can diverge if updates are not centralized. Meeting dates and titles remain fixed after submission until future administrative override behavior is introduced. Actual file upload and retrieval require backend storage and a documented schema migration.
 
 ### ADR-010: Independent Committee and Neighbor Completion
 

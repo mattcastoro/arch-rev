@@ -4,6 +4,44 @@ const REQUESTS_KEY = 'arch_rev_requests'
 const RESET_KEY = 'arch_rev_password_reset'
 
 const RESET_CODE_LIFETIME_MS = 15 * 60 * 1000
+const requestMonthFormatter = new Intl.DateTimeFormat('en-US', {
+  month: 'long',
+  year: 'numeric',
+})
+
+function getSecondMonday(year, month) {
+  const firstOfMonth = new Date(year, month, 1)
+  const daysUntilMonday = (8 - firstOfMonth.getDay()) % 7
+  return new Date(year, month, 1 + daysUntilMonday + 7)
+}
+
+function formatLocalDate(date) {
+  const year = date.getFullYear()
+  const month = `${date.getMonth() + 1}`.padStart(2, '0')
+  const day = `${date.getDate()}`.padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+export function getScheduledReviewDate(submittedAt = new Date()) {
+  const submissionDate = new Date(submittedAt)
+  let meetingDate = getSecondMonday(submissionDate.getFullYear(), submissionDate.getMonth())
+
+  // Requests submitted on meeting day roll into the following month's review.
+  if (submissionDate >= meetingDate) {
+    meetingDate = getSecondMonday(submissionDate.getFullYear(), submissionDate.getMonth() + 1)
+  }
+
+  return meetingDate
+}
+
+export function createRequestTitle(improvements, scheduledReviewDate) {
+  const improvementTypes = improvements.map(({ improvementType }) => improvementType)
+  const improvementSummary = improvementTypes.length >= 4
+    ? `${improvementTypes.slice(0, 3).join(', ')}, …`
+    : improvementTypes.join(', ')
+
+  return `${requestMonthFormatter.format(scheduledReviewDate)} — ${improvementSummary}`
+}
 
 function readJson(key, fallback) {
   const value = localStorage.getItem(key)
@@ -105,6 +143,7 @@ export function getRequestsByOwner(email) {
 
 export function createRequest(requestInput) {
   const requests = getRequests()
+  const submittedAt = new Date()
   const improvements = requestInput.improvements ?? [{
     improvementType: requestInput.improvementType,
     description: requestInput.description,
@@ -112,6 +151,7 @@ export function createRequest(requestInput) {
     links: requestInput.links,
   }]
   const firstImprovement = improvements[0]
+  const scheduledReviewDate = getScheduledReviewDate(submittedAt)
   const neighbors = (requestInput.neighbors ?? []).map((neighbor, index) => ({
     id: neighbor.id ?? `neighbor_${Date.now()}_${index}`,
     fullName: neighbor.fullName,
@@ -127,7 +167,8 @@ export function createRequest(requestInput) {
   }))
   const neighborAcknowledgmentStatus = requestInput.noVisibleNeighbors ? 'Not required' : 'Pending'
   const request = {
-    id: `req_${Date.now()}`,
+    id: `req_${submittedAt.getTime()}`,
+    title: createRequestTitle(improvements, scheduledReviewDate),
     ownerEmail: requestInput.ownerEmail.toLowerCase(),
     improvements,
     improvementType: firstImprovement.improvementType,
@@ -140,7 +181,8 @@ export function createRequest(requestInput) {
     neighborAcknowledgmentStatus,
     committeeStatus: 'Not reviewed',
     status: 'In progress',
-    createdAt: new Date().toISOString(),
+    scheduledReviewDate: formatLocalDate(scheduledReviewDate),
+    createdAt: submittedAt.toISOString(),
   }
 
   writeJson(REQUESTS_KEY, [...requests, request])
